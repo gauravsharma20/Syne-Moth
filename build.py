@@ -33,7 +33,7 @@ html = f'''<title>SYNE MOTH</title>
 page_head = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
   '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">'
   '<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'
-  '<style>html,body{margin:0;padding:0;height:100%;-webkit-text-size-adjust:100%}</style></head><body>')
+  '<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0;height:100%;-webkit-text-size-adjust:100%}body{padding:0}</style></head><body>')
 (R / 'index.html').write_text(page_head + html + '</body></html>')
 print('ok', len(html))
 # local test copy wrapped the way the artifact host wraps the page

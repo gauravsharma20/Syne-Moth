@@ -5,12 +5,13 @@ html, body { height: 100%; }
 html { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
 *, *::before, *::after { box-sizing: inherit; }
 body { overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background: var(--sy-grain), var(--chassis); }
-#app { height: 100%; }
+#app { height: 100%; position: relative; }
 .vh { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 html:not(.kbd) :is(button, .sy-knob__body, [tabindex]):focus-visible { outline: none; }
 
 .shell { height: 100%; display: flex; align-items: center; justify-content: center;
-  padding: max(6px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px)); }
+  padding: 6px max(10px, env(safe-area-inset-right, 0px)) 6px max(10px, env(safe-area-inset-left, 0px)); }
+/* top and bottom insets (status bar, a host's title bar, the home indicator) are kept off the page by the root padding */
 .dev { position: relative; width: 100%; max-width: 1040px; height: 100%; max-height: 520px; display: flex; flex-direction: column; gap: var(--gap, 10px); touch-action: none; }
 
 /* top plate: function buttons either side of the display */
@@ -176,7 +177,7 @@ html:not(.kbd) .wheel:focus-visible { outline: none; }
 .slot small { font: 400 10.5px/13px var(--font-sans); color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .slot .ukey { height: 26px; padding: 0 8px; font-size: 8px; }
 .slot .sy-readout { font-size: 11px; }
-.fitwrap { position: fixed; inset: 0; overflow: hidden; }
+.fitwrap { position: absolute; inset: 0; overflow: hidden; }
 
 .rail__oct { font: 600 7px/1 var(--font-sans); letter-spacing: .14em; color: var(--ink-muted); text-transform: uppercase; }
 .rail__brand { font: 300 8px/1 var(--font-sans); letter-spacing: .08em; color: var(--ink-muted); }

@@ -526,9 +526,25 @@
   document.addEventListener('visibilitychange', function () { if (document.hidden) dropAll(); });
 
   /* ================= app ================= */
+  /* the room the instrument really has: the #app box (inside whatever the host reserves at the top and bottom, such as
+     Claude's title bar or the status bar) less the notch insets at the sides */
+  var probe = null;
+  function insets() {
+    if (!probe) { probe = document.createElement('div'); probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;left:0;top:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)'; document.body.appendChild(probe); }
+    var cs = getComputedStyle(probe); return { l: parseFloat(cs.paddingLeft) || 0, r: parseFloat(cs.paddingRight) || 0 };
+  }
+  function measure() {
+    var app = document.getElementById('app'), ins = insets();
+    return { w: app.clientWidth || window.innerWidth, h: app.clientHeight || window.innerHeight, l: ins.l, r: ins.r, ww: window.innerWidth, wh: window.innerHeight };
+  }
   function useViewport() {
-    var s = useState({ w: window.innerWidth, h: window.innerHeight });
-    useEffect(function () { var f = function () { s[1]({ w: window.innerWidth, h: window.innerHeight }); }; window.addEventListener('resize', f); window.addEventListener('orientationchange', f); return function () { window.removeEventListener('resize', f); window.removeEventListener('orientationchange', f); }; }, []);
+    var s = useState(measure);
+    useEffect(function () {
+      var f = function () { s[1](measure()); }, ro = window.ResizeObserver ? new ResizeObserver(f) : null;
+      window.addEventListener('resize', f); window.addEventListener('orientationchange', f); if (ro) ro.observe(document.getElementById('app'));
+      var t = setTimeout(f, 300);
+      return function () { clearTimeout(t); window.removeEventListener('resize', f); window.removeEventListener('orientationchange', f); if (ro) ro.disconnect(); };
+    }, []);
     return s[0];
   }
   /* a phone held sideways in an app that keeps the page upright: the instrument is drawn turned a quarter, and every
@@ -537,6 +553,7 @@
   var XF = null;
   (function () {
     var cxD = Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'clientX'), cyD = Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'clientY'), gbr = Element.prototype.getBoundingClientRect;
+    UI.rawRect = function (el) { return gbr.call(el); };
     if (!cxD || !cyD || !cxD.get || typeof DOMMatrix === 'undefined') return;
     function loc(e) { return XF.inv.transformPoint(new DOMPoint(cxD.get.call(e), cyD.get.call(e))); }
     Object.defineProperty(MouseEvent.prototype, 'clientX', { configurable: true, enumerable: true, get: function () { return XF ? loc(this).x : cxD.get.call(this); } });
@@ -560,7 +577,10 @@
     }, []);
     /* only a phone held upright is asked to turn; a narrow window anywhere else (a side panel, a small Mac window)
        gets the whole landscape instrument, laid out at 740 x 340 and scaled down to fit */
-    var phone = isPhone(), turned = phone && vp.h > vp.w, sv = turned ? { w: vp.h, h: vp.w } : vp;
+    /* sv: the landscape room the layout below is sized for. Turned, it is the #app box on its side; otherwise the #app box
+       less any notch inset beyond the shell's own 10 px side padding */
+    var phone = isPhone(), turned = phone && vp.h > vp.w;
+    var sv = turned ? { w: vp.h, h: vp.w } : { w: vp.w - Math.max(0, vp.l - 10) - Math.max(0, vp.r - 10), h: vp.h };
     var narrow = sv.w < 660 || sv.h < 330 || sv.h > sv.w * 1.05;   /* too narrow or too short (a browser's bars in landscape): lay out larger and scale to fit */
     var scale = 1, box = sv;
     if (narrow) { box = { w: 740, h: Math.round(Math.max(340, Math.min(520, 740 * sv.h / sv.w))) }; scale = Math.min(sv.w / box.w, sv.h / box.h, 1); }
@@ -569,7 +589,9 @@
       var sw = box.w * scale, sh = box.h * scale;
       mx = set.turnRight ? new DOMMatrix([0, -scale, scale, 0, (vp.w - sh) / 2, vp.h - (vp.h - sw) / 2]) : new DOMMatrix([0, scale, -scale, 0, vp.w - (vp.w - sh) / 2, (vp.h - sw) / 2]);
     }
-    XF = mx ? { m: mx, inv: mx.inverse() } : null;
+    /* pointer positions are in screen space, so the inverse also takes off where the #app box sits on screen */
+    var ao = mx && UI.rawRect ? UI.rawRect(document.getElementById('app')) : { left: 0, top: 0 };
+    XF = mx ? { m: mx, inv: new DOMMatrix().translate(ao.left, ao.top).multiply(mx).inverse() } : null;
     /* sized from the screen so everything fits one landscape screen */
     var W = Math.min(box.w, 1040) - 20, H = Math.min(box.h, 520) - 12;
     var gap = Math.round(Math.max(6, Math.min(12, H * 0.025)));
