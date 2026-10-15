@@ -1,0 +1,418 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* SYNE — component styles. Colours, radii, shadows, sizes and durations come from tokens.css.
+   The only literals here are physical constants: plastic grain, chrome reflections, glass. */
+
+:root {
+  --sy-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.45 0 0 0 0 0.45 0 0 0 0.075 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+  --sy-ease-spring: cubic-bezier(.25, 1.55, .5, 1);
+  --sy-ease-snap: cubic-bezier(.6, 0, .2, 1.25);
+}
+
+body { margin: 0; background: var(--sy-grain), var(--chassis); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+.sy-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-8); padding: var(--space-6); }
+.sy-row--center { align-items: center; }
+.sy-row--top { align-items: flex-start; }
+.sy-col { display: flex; flex-direction: column; gap: var(--space-4); }
+
+/* ---------- shared ---------- */
+.sy-ctl { display: inline-flex; flex-direction: column; align-items: center; gap: var(--space-2); user-select: none; -webkit-user-select: none; }
+.sy-legend { font: 600 9px/12px var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted); white-space: nowrap; }
+.sy-legend--sm { font-size: 8px; line-height: 10px; letter-spacing: .16em; }
+.sy-legend--ink { color: var(--ink); }
+.sy-legend--signal { color: var(--signal-ink); }
+.sy-legend__mark { display: inline-block; vertical-align: middle; margin-right: 7px; position: relative; top: -1px; }
+.sy-legend__mark--dot { width: 5px; height: 5px; border-radius: 50%; background: var(--signal); }
+.sy-legend__mark--triangle { width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 7px solid var(--signal); }
+.sy-legend__mark--bar { width: 12px; height: 1.5px; background: var(--ink); }
+.sy-readout { font: 500 13px/16px var(--font-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.sy-scale { font: 400 10px/12px var(--font-sans); color: var(--ink-muted); fill: var(--ink-muted); }
+.sy-glyph { display: inline-block; flex: none; vertical-align: middle; overflow: visible; }
+
+.sy-key, .sy-push, .sy-knob__body, .sy-dial__body, .sy-sel__body, .sy-toggle, .sy-rocker, .sy-slide, .sy-pill, .sy-fader__cap, .sy-pad, .sy-seg__item, .sy-jack, .sy-lever__hit { -webkit-tap-highlight-color: transparent; touch-action: none; }
+:is(.sy-key, .sy-push, .sy-knob__body, .sy-dial__body, .sy-sel__body, .sy-toggle, .sy-rocker, .sy-slide, .sy-pill, .sy-fader__cap, .sy-pad, .sy-seg__item, .sy-jack, .sy-lever__hit):focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+:is(.sy-key, .sy-push, .sy-toggle, .sy-rocker, .sy-slide, .sy-pill, .sy-pad, .sy-seg__item, .sy-jack):focus:not(:focus-visible) { outline: none; }
+button.sy-key, button.sy-push, button.sy-toggle, button.sy-rocker, button.sy-slide, button.sy-pill, button.sy-pad, button.sy-seg__item, button.sy-jack { font: inherit; color: inherit; margin: 0; appearance: none; -webkit-appearance: none; }
+
+/* ---------- panel / module ---------- */
+.sy-panel { position: relative; background: var(--sy-grain), var(--chassis); border-radius: var(--radius-lg); box-shadow: var(--shadow-chassis); padding: var(--space-6); }
+.sy-panel--module { background: var(--sy-grain), linear-gradient(180deg, var(--sheen-soft), transparent 30%), var(--chassis-raised); border-radius: var(--radius-sm); box-shadow: var(--shadow-plate); padding: 34px 24px 26px; }
+.sy-panel--flat { box-shadow: none; background: transparent; padding: 0; }
+.sy-panel__head { position: absolute; top: 13px; left: 32px; right: 32px; display: flex; justify-content: space-between; align-items: center; }
+.sy-panel--chassis .sy-panel__head { top: 16px; left: 24px; right: 24px; }
+.sy-panel__index { font: 300 11px/12px var(--font-sans); color: var(--ink-faint); letter-spacing: .04em; }
+.sy-screw { position: absolute; width: 11px; height: 11px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, var(--sheen) 0, transparent 42%), radial-gradient(circle, color-mix(in oklab, var(--alu), black 6%) 0 52%, color-mix(in oklab, var(--alu), black 34%) 78%, color-mix(in oklab, var(--alu), black 12%) 100%);
+  box-shadow: 0 0 0 1px var(--shade), inset 0 -1px 1px var(--shade), 0 1px 0 var(--sheen-soft); }
+.sy-screw::before, .sy-screw::after { content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 1.6px; margin: -.8px 0 0 -3px; border-radius: 1px; background: color-mix(in oklab, var(--knob-black) 78%, transparent); transform: rotate(var(--r, 30deg)); box-shadow: 0 .5px 0 var(--sheen-soft); }
+.sy-screw::after { transform: rotate(calc(var(--r, 30deg) + 90deg)); }
+.sy-screw--tl { top: 9px; left: 9px; } .sy-screw--tr { top: 9px; right: 9px; }
+.sy-screw--bl { bottom: 9px; left: 9px; } .sy-screw--br { bottom: 9px; right: 9px; }
+
+/* ---------- grille ---------- */
+.sy-grille { position: relative;
+  background:
+    radial-gradient(circle at 50% 44%, var(--seam) 0 calc(var(--gh) - .3px), transparent var(--gh)),
+    radial-gradient(circle at 50% 60%, var(--sheen) 0 calc(var(--gh) - .3px), transparent var(--gh));
+  background-size: var(--gp) var(--gp); }
+.sy-grille--round { -webkit-mask: radial-gradient(circle closest-side, #000 98%, transparent 100%); mask: radial-gradient(circle closest-side, #000 98%, transparent 100%); }
+
+/* ---------- LED ---------- */
+.sy-led { --lc: var(--signal); --ls: var(--led-size); position: relative; display: inline-block; flex: none; width: var(--ls); height: var(--ls); border-radius: var(--radius-round);
+  background: radial-gradient(circle at 36% 30%, var(--sheen) 0 14%, transparent 48%), radial-gradient(circle at 50% 60%, var(--led-off) 0 55%, color-mix(in oklab, var(--led-off), black 18%) 100%);
+  box-shadow: inset 0 -1px 1px var(--shade), 0 1px 1px var(--shade); }
+.sy-led::after { content: ''; position: absolute; inset: 0; border-radius: inherit; opacity: 0; transition: opacity 40ms linear;
+  background: radial-gradient(circle at 36% 30%, rgba(255,255,255,.95) 0 13%, transparent 44%), radial-gradient(circle at 50% 55%, color-mix(in oklab, var(--lc), white 30%) 0, var(--lc) 52%, color-mix(in oklab, var(--lc), black 22%) 100%);
+  box-shadow: 0 0 calc(var(--ls) * .55) color-mix(in oklab, var(--lc) 85%, transparent), 0 0 calc(var(--ls) * 1.6) color-mix(in oklab, var(--lc) 38%, transparent); }
+.sy-led--bezel { box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--knob-black) 82%, transparent), 0 0 0 2.5px var(--sheen-soft), 0 2px 3px var(--shade), inset 0 -1px 1px var(--shade); }
+.sy-led--flat { background: var(--led-off); box-shadow: inset 0 1px 1px var(--shade); }
+.sy-led--flat::after { background: var(--lc); box-shadow: 0 0 calc(var(--ls) * .8) color-mix(in oklab, var(--lc) 60%, transparent); }
+.sy-led--dark { background: radial-gradient(circle at 36% 30%, var(--sheen-soft) 0 14%, transparent 48%), var(--ink-faint); }
+.sy-led.is-on::after { opacity: 1; }
+.sy-led.is-blink-slow::after { animation: sy-blink var(--dur-blink-slow) steps(1, end) infinite; }
+.sy-led.is-blink-fast::after { animation: sy-blink var(--dur-blink-fast) steps(1, end) infinite; }
+@keyframes sy-blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+.sy-led--signal { --lc: var(--signal); } .sy-led--red { --lc: var(--led-red); } .sy-led--amber { --lc: var(--led-amber); }
+.sy-led--green { --lc: var(--led-green); } .sy-led--blue { --lc: var(--led-blue); } .sy-led--cobalt { --lc: var(--cobalt); } .sy-led--white { --lc: var(--led-white); }
+.sy-led-row { display: inline-flex; align-items: center; gap: var(--space-2); }
+.sy-led-row--below { flex-direction: column; }
+
+/* ---------- square key (concave dish) ---------- */
+.sy-key { --k: var(--key-md); position: relative; flex: none; width: var(--k); height: var(--k); padding: 0; border: 0; cursor: pointer;
+  border-radius: var(--radius-sm); background: var(--sy-grain), var(--cap);
+  box-shadow: 0 0 0 1.5px var(--seam), var(--shadow-raised);
+  transition: transform var(--dur-release) var(--sy-ease-spring), box-shadow var(--dur-release) ease-out; }
+.sy-key--sm { --k: var(--key-sm); } .sy-key--lg { --k: var(--key-lg); }
+.sy-key__dish { position: absolute; inset: 11%; border-radius: 50%; pointer-events: none;
+  background:
+    radial-gradient(ellipse 38% 16% at 50% 88%, var(--sheen) 0, transparent 100%),
+    radial-gradient(circle at 50% 24%, var(--shade) 0, transparent 72%),
+    var(--cap);
+  box-shadow: inset 0 4px 6px var(--shade), inset 0 -1px 2px var(--sheen-soft), 0 1px 0 var(--sheen); }
+.sy-key__led { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.sy-key__glyph { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: var(--ink); pointer-events: none; }
+.sy-key__legend { position: absolute; left: 0; right: 0; bottom: 5px; text-align: center; font: 600 8px/10px var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted); pointer-events: none; }
+.sy-key__num { position: absolute; left: 5px; top: 4px; font: 400 9px/12px var(--font-mono); color: var(--ink-muted); pointer-events: none; }
+.sy-key.is-down { transform: translateY(1.5px); box-shadow: 0 0 0 1.5px var(--seam), var(--shadow-pressed); transition-duration: var(--dur-press); transition-timing-function: ease-in; }
+.sy-key.is-down .sy-key__dish { background: radial-gradient(ellipse 34% 13% at 50% 88%, var(--sheen-soft) 0, transparent 100%), radial-gradient(circle at 50% 26%, var(--shade) 0, transparent 76%), var(--cap-shade); }
+.sy-key:disabled { cursor: default; opacity: .5; }
+
+/* key strip: joined keys in one housing */
+.sy-strip { display: inline-block; padding: 6px; border-radius: var(--radius-md); background: var(--sy-grain), linear-gradient(180deg, var(--sheen-soft), transparent 40%), var(--chassis-raised); box-shadow: var(--shadow-plate); }
+.sy-strip__row { display: flex; gap: 4px; }
+.sy-strip .sy-key { border-radius: var(--radius-sm); box-shadow: 0 0 0 1.5px var(--seam), inset 0 1px 0 var(--sheen), inset 0 -2px 3px var(--shade); }
+.sy-strip .sy-key.is-down { transform: translateY(1px); box-shadow: 0 0 0 1.5px var(--seam), inset 0 2px 5px var(--shade); }
+.sy-strip__labels { display: flex; gap: 4px; padding: 7px 6px 0; }
+.sy-strip__labels span { text-align: center; }
+
+/* ---------- round push button ---------- */
+.sy-push { --p: var(--key-md); --c: var(--cap); position: relative; flex: none; width: calc(var(--p) + 14px); height: calc(var(--p) + 14px); padding: 0; border: 0; cursor: pointer;
+  border-radius: var(--radius-round);
+  background: radial-gradient(circle at 50% 20%, var(--sheen) 0, transparent 60%), radial-gradient(circle at 50% 50%, var(--chassis-raised) 60%, var(--chassis-sunk) 100%);
+  box-shadow: var(--shadow-knob), inset 0 -2px 3px var(--shade), inset 0 1px 1px var(--sheen); }
+.sy-push--sm { --p: var(--key-sm); } .sy-push--lg { --p: var(--key-lg); }
+.sy-push__cap { position: absolute; inset: 7px; border-radius: var(--radius-round); pointer-events: none;
+  background:
+    radial-gradient(ellipse 34% 14% at 50% 86%, var(--sheen) 0, transparent 100%),
+    radial-gradient(ellipse 60% 34% at 50% 18%, color-mix(in oklab, var(--c), white 26%) 0, transparent 100%),
+    radial-gradient(circle at 50% 40%, var(--c) 0 50%, color-mix(in oklab, var(--c), black 20%) 100%);
+  box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--c), black 45%), 0 2px 3px var(--shade-deep), inset 0 -3px 5px color-mix(in oklab, var(--c), black 18%);
+  transition: transform var(--dur-release) var(--sy-ease-spring), box-shadow var(--dur-release) ease-out, filter var(--dur-release); }
+.sy-push--ivory { --c: var(--cap); } .sy-push--moss { --c: var(--moss); } .sy-push--cobalt { --c: var(--cobalt); }
+.sy-push--signal { --c: var(--signal); } .sy-push--black, .sy-push--graphite { --c: var(--knob-black); }
+.sy-push--ivory .sy-push__cap { box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--seam) 70%, transparent), 0 2px 3px var(--shade-deep), inset 0 -3px 5px var(--shade); }
+.sy-push.is-down .sy-push__cap { transform: translateY(1px) scale(.97); box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--c), black 45%), 0 0 1px var(--shade-deep), inset 0 2px 4px var(--shade); transition-duration: var(--dur-press); transition-timing-function: ease-in; }
+.sy-push.is-lit .sy-push__cap { filter: saturate(1.15) brightness(1.1);
+  box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--c), black 30%), 0 0 14px color-mix(in oklab, var(--c) 75%, transparent), 0 0 30px color-mix(in oklab, var(--c) 35%, transparent), inset 0 0 10px color-mix(in oklab, var(--c), white 40%); }
+.sy-push__legend { position: absolute; inset: 0; display: grid; place-items: center; font: 600 9px/10px var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); pointer-events: none; }
+.sy-push--signal .sy-push__legend { color: var(--on-signal); }
+.sy-push--black .sy-push__legend, .sy-push--graphite .sy-push__legend { color: var(--on-black); }
+.sy-push--moss .sy-push__legend, .sy-push--cobalt .sy-push__legend { display: none; }
+
+/* ---------- segmented ---------- */
+.sy-seg { display: inline-flex; padding: 6px; gap: 4px; border-radius: var(--radius-md); }
+.sy-seg--keys { background: var(--sy-grain), linear-gradient(180deg, var(--sheen-soft), transparent 40%), var(--chassis-raised); box-shadow: var(--shadow-plate); }
+.sy-seg--inset { gap: 0; padding: 4px; background: var(--chassis-sunk); box-shadow: var(--shadow-well), 0 0 0 1px var(--shade), 0 1px 0 1px var(--sheen-soft); }
+.sy-seg__item { position: relative; display: grid; place-items: center; width: var(--sw, 64px); height: var(--sh, 46px); padding: 0; border: 0; cursor: pointer; color: var(--ink);
+  transition: transform var(--dur-release) var(--sy-ease-spring), box-shadow var(--dur-release), background var(--dur-release); }
+.sy-seg--keys .sy-seg__item { border-radius: var(--radius-sm); background: var(--sy-grain), radial-gradient(ellipse 70% 50% at 50% 30%, var(--sheen-soft), transparent 80%), var(--cap); box-shadow: 0 0 0 1.5px var(--seam), inset 0 1px 0 var(--sheen), inset 0 -2px 3px var(--shade), 0 2px 3px var(--shade); }
+.sy-seg--keys .sy-seg__item.is-active { transform: translateY(1px); background: var(--sy-grain), var(--cap-shade); box-shadow: 0 0 0 1.5px var(--seam), inset 0 2px 5px var(--shade); transition-duration: var(--dur-press); }
+.sy-seg--inset .sy-seg__item { background: transparent; color: var(--ink-muted); }
+.sy-seg--inset .sy-seg__item + .sy-seg__item::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: var(--hairline); }
+.sy-seg--inset .sy-seg__item.is-active { color: var(--on-black); border-radius: 6px;
+  background: radial-gradient(ellipse 80% 60% at 50% 15%, rgba(255,255,255,.14), transparent 80%), var(--knob-black);
+  box-shadow: 0 1px 1px var(--shade-deep), 0 4px 8px -2px var(--shade-deep), inset 0 1px 0 rgba(255,255,255,.12); z-index: 1; }
+.sy-seg--inset .sy-seg__item.is-active::before, .sy-seg--inset .sy-seg__item.is-active + .sy-seg__item::before { display: none; }
+.sy-seg__label { font: 600 8px/10px var(--font-sans); letter-spacing: .14em; text-transform: uppercase; }
+
+/* ---------- pads ---------- */
+.sy-pads { display: inline-grid; gap: 7px; padding: 7px; border-radius: var(--radius-md); background: var(--chassis-sunk); box-shadow: var(--shadow-well), 0 0 0 1px var(--shade), 0 1px 0 1px var(--sheen-soft); }
+.sy-pad { --pc: var(--signal); --ps: var(--pad-size); position: relative; width: var(--ps); height: var(--ps); padding: 0; border: 0; cursor: pointer; border-radius: var(--radius-pad);
+  /* matte silicone: a soft-touch texture and an even fall-off of the one light; no hotspot, no specular edge */
+  background: var(--sy-grain), linear-gradient(180deg, color-mix(in oklab, var(--pad), white 6%) 0%, var(--pad) 45%, color-mix(in oklab, var(--pad), black 5%) 100%);
+  box-shadow: 0 0 0 1.5px var(--pad-edge), inset 0 1px 1px color-mix(in oklab, var(--pad), white 14%), inset 0 -2px 4px var(--shade), 0 2px 2px var(--shade);
+  transition: transform var(--dur-release) var(--sy-ease-spring), box-shadow var(--dur-release), filter var(--dur-release); }
+.sy-pad::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.36), rgba(255,255,255,.1) 70%, transparent 100%); transition: opacity var(--dur-flash) ease-out; }
+.sy-pad.is-lit {
+  /* lit from behind, the light spreads evenly through the matte silicone: a soft glow, no white hotspot or rim */
+  background: var(--sy-grain), radial-gradient(ellipse 95% 85% at 50% 50%, color-mix(in oklab, var(--pc), white 12%) 0, var(--pc) 70%, color-mix(in oklab, var(--pc), black 8%) 100%);
+  box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--pc), black 38%), inset 0 0 6px color-mix(in oklab, var(--pc), white 16%), inset 0 -2px 4px color-mix(in oklab, var(--pc), black 16%), 0 0 10px color-mix(in oklab, var(--pc) 30%, transparent); }
+.sy-pad.is-play { box-shadow: 0 0 0 1.5px var(--pad-edge), 0 0 0 3.5px var(--led-white), inset 0 -2px 4px var(--shade), 0 0 8px color-mix(in oklab, var(--led-white) 35%, transparent); }
+.sy-pad.is-lit.is-play { filter: brightness(1.1) saturate(1.05); }
+.sy-pad.is-down { transform: scale(.955); transition-duration: 25ms; transition-timing-function: ease-in; }
+.sy-pad.is-flash::after { opacity: 1; transition-duration: 0s; }
+.sy-pad--red { --pc: var(--led-red); } .sy-pad--blue { --pc: var(--led-blue); } .sy-pad--green { --pc: var(--led-green); }
+.sy-pad--amber { --pc: var(--led-amber); } .sy-pad--white { --pc: var(--led-white); } .sy-pad--cobalt { --pc: var(--cobalt); }
+
+/* ---------- step grid ---------- */
+.sy-steps { display: grid; gap: var(--space-3); }
+.sy-step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+/* ---------- knob ---------- */
+.sy-knob { --sz: var(--knob-md); }
+.sy-knob__wrap { position: relative; width: var(--sz); height: var(--sz); }
+.sy-knob__scale { position: absolute; left: -20px; top: -20px; width: calc(var(--sz) + 40px); height: calc(var(--sz) + 40px); pointer-events: none; overflow: visible; }
+.sy-knob__scale line { stroke: var(--ink-faint); stroke-width: 1.2; stroke-linecap: round; }
+.sy-knob__scale line.is-major { stroke: var(--ink); stroke-width: 1.4; }
+.sy-knob__scale text { font: 400 9px var(--font-sans); fill: var(--ink-muted); }
+.sy-knob__marker { position: absolute; top: 50%; left: -26px; width: 0; height: 0; transform: translateY(-50%); border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 13px solid var(--signal); }
+.sy-knob__body { position: absolute; inset: 0; border-radius: var(--radius-round); cursor: ns-resize; box-shadow: var(--shadow-knob); outline-offset: 4px; }
+.sy-knob--circular .sy-knob__body { cursor: grab; }
+.sy-knob__skirt { position: absolute; inset: 0; border-radius: var(--radius-round);
+  background: repeating-conic-gradient(var(--knurl-a) 0 var(--kn-a, 1.7deg), var(--knurl-b) var(--kn-a, 1.7deg) var(--kn-b, 3.6deg)); }
+.sy-knob__shade { position: absolute; inset: 0; border-radius: var(--radius-round); pointer-events: none;
+  background: linear-gradient(180deg, var(--sheen-soft) 0, transparent 34%, transparent 52%, var(--shade-deep) 100%);
+  box-shadow: inset 0 0 0 1px var(--shade), inset 0 -2px 3px var(--shade); }
+.sy-knob__face { position: absolute; left: 13%; right: 13%; top: 9%; bottom: 17%; border-radius: var(--radius-round); overflow: hidden;
+  background: radial-gradient(circle at 50% 18%, var(--sheen) 0, transparent 58%), radial-gradient(circle at 50% 60%, var(--face) 55%, color-mix(in oklab, var(--face), black 9%) 100%);
+  box-shadow: 0 0 0 1px var(--shade), 0 2px 2px var(--shade-deep), 0 3px 1px -1px var(--shade), inset 0 1px 1px var(--sheen), inset 0 -2px 3px var(--shade); }
+.sy-knob__rot { position: absolute; inset: 0; border-radius: inherit; will-change: transform; }
+.sy-knob.is-detented .sy-knob__rot, .sy-knob.is-settling .sy-knob__rot { transition: transform var(--dur-spring) var(--sy-ease-spring); }
+.sy-knob__ptr { position: absolute; left: 50%; transform: translateX(-50%); }
+.sy-knob__ptr--dot { top: 10%; width: 9%; height: 9%; border-radius: 50%; background: var(--knob-black); box-shadow: inset 0 1px 1px rgba(0,0,0,.5), 0 1px 0 var(--sheen-soft); }
+.sy-knob__ptr--line { top: 5%; width: 6%; min-width: 2px; height: 30%; border-radius: 2px; background: var(--ink); box-shadow: 0 1px 0 var(--sheen-soft); }
+.sy-knob__ptr--signal { top: 3%; width: 7%; min-width: 2.5px; height: 24%; border-radius: 2px; background: var(--signal); box-shadow: 0 0 3px color-mix(in oklab, var(--signal) 50%, transparent); }
+.sy-knob--ivory { --knurl-a: var(--cap); --knurl-b: var(--cap-shade); --face: var(--cap); }
+.sy-knob--knurl { --knurl-a: color-mix(in oklab, var(--alu), black 18%); --knurl-b: color-mix(in oklab, var(--knob-black), white 12%); --face: color-mix(in oklab, var(--cap), var(--alu) 22%); }
+.sy-knob--alu { --knurl-a: var(--alu); --knurl-b: color-mix(in oklab, var(--alu), black 32%); --face: var(--alu); }
+.sy-knob--alu .sy-knob__face { background: radial-gradient(circle at 50% 18%, var(--sheen) 0, transparent 58%), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0 1px, rgba(0,0,0,.04) 1px 2px), var(--alu); }
+.sy-knob--black { --knurl-a: var(--knob-black); --knurl-b: color-mix(in oklab, var(--knob-black), white 18%); --face: var(--knob-black); }
+.sy-knob--black .sy-knob__face { background: radial-gradient(circle at 50% 18%, rgba(255,255,255,.22) 0, transparent 58%), var(--knob-black); }
+.sy-knob--black .sy-knob__ptr--line { background: var(--on-black); }
+.sy-knob--smooth .sy-knob__skirt { background: linear-gradient(90deg, color-mix(in oklab, var(--cap), black 26%) 0, var(--cap-shade) 14%, var(--cap) 38%, color-mix(in oklab, var(--cap), white 40%) 50%, var(--cap) 62%, var(--cap-shade) 86%, color-mix(in oklab, var(--cap), black 26%) 100%); }
+.sy-knob--smooth .sy-knob__face { left: 7%; right: 7%; top: 3%; bottom: 13%; --face: var(--cap); }
+.sy-knob__led { margin-bottom: 2px; }
+.sy-knob.is-dragging .sy-knob__body { cursor: grabbing; }
+
+/* ---------- dial ---------- */
+.sy-dial__wrap { position: relative; }
+.sy-dial__scale { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.sy-dial__tick { stroke: var(--ink); stroke-width: 1; stroke-linecap: round; }
+.sy-dial__tick--minor { stroke: var(--ink-faint); }
+.sy-dial__track { fill: none; stroke: var(--hairline); stroke-width: 4; }
+.sy-dial__arc { fill: none; stroke: var(--knob-black); stroke-width: 5; stroke-linecap: butt; }
+.sy-dial__nub { fill: var(--knob-black); }
+.sy-dial__nub-hl { fill: rgba(255,255,255,.22); }
+.sy-dial__num { font: 400 12px var(--font-sans); fill: var(--ink); }
+.sy-dial__body { position: absolute; border-radius: var(--radius-round); cursor: grab; box-shadow: var(--shadow-knob); outline-offset: 5px; }
+.sy-dial__ring { position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(circle at 50% 30%, var(--sheen), transparent 70%), var(--cap-shade); box-shadow: inset 0 0 0 1px var(--shade), inset 0 -3px 4px var(--shade); }
+.sy-dial__face { position: absolute; inset: 5%; border-radius: inherit; overflow: hidden; will-change: transform;
+  background: linear-gradient(90deg, color-mix(in oklab, var(--cap), white 30%) 0, var(--cap) 46%, var(--sheen) 49.4%, color-mix(in oklab, var(--cap), black 8%) 50.6%, color-mix(in oklab, var(--cap), black 13%) 100%);
+  box-shadow: 0 0 0 1px var(--shade), 0 2px 3px var(--shade); }
+.sy-dial__face::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--shade-deep); }
+.sy-dial__light { position: absolute; inset: 5%; border-radius: inherit; pointer-events: none; background: radial-gradient(circle at 50% 22%, var(--sheen-soft), transparent 62%), linear-gradient(180deg, transparent 60%, var(--shade)); }
+
+/* ---------- selector (bar / arrow) ---------- */
+.sy-sel { --sz: var(--knob-md); }
+.sy-sel__wrap { position: relative; width: var(--sz); height: var(--sz); margin-top: 24px; }
+.sy-sel__label { position: absolute; transform: translate(-50%, -50%); font: 600 10px/12px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); cursor: pointer; white-space: nowrap; }
+.sy-sel__label.is-active { color: var(--ink); }
+.sy-sel__label--signal, .sy-sel__label--signal.is-active { color: var(--signal-ink); }
+.sy-sel__body { position: absolute; inset: 0; border-radius: var(--radius-round); cursor: grab; outline-offset: 4px;
+  background: radial-gradient(circle at 50% 22%, var(--sheen), transparent 70%), var(--chassis-raised);
+  box-shadow: var(--shadow-knob), inset 0 -2px 3px var(--shade); }
+.sy-sel__face { position: absolute; inset: 7%; border-radius: var(--radius-round);
+  background: radial-gradient(circle at 50% 28%, color-mix(in oklab, var(--cap), white 40%) 0, var(--cap) 55%, var(--cap-shade) 100%);
+  box-shadow: 0 0 0 1px var(--shade), inset 0 -2px 4px var(--shade); }
+.sy-sel__rot { position: absolute; inset: 0; transition: transform var(--dur-spring) var(--sy-ease-spring); }
+.sy-sel__bar { position: absolute; left: 40%; width: 20%; top: 1%; bottom: 1%; border-radius: 7px;
+  background: linear-gradient(90deg, var(--cap-shade) 0, var(--cap) 28%, color-mix(in oklab, var(--cap), white 40%) 50%, var(--cap) 72%, var(--cap-shade) 100%);
+  box-shadow: 0 0 0 1px var(--shade), 0 4px 7px var(--shade), 0 1px 1px var(--shade-deep); }
+.sy-sel__tick { position: absolute; left: 50%; top: 6%; width: 2px; height: 16%; margin-left: -1px; border-radius: 1px; background: var(--ink-faint); }
+.sy-sel--arrow svg { overflow: visible; }
+.sy-sel__pointer { fill: var(--knob-black); filter: drop-shadow(0 2px 2px var(--shade-deep)) drop-shadow(0 10px 12px var(--shade)); transition: transform var(--dur-spring) var(--sy-ease-spring); }
+.sy-sel__pointer-sheen { fill: none; stroke: rgba(255,255,255,.2); stroke-width: 1.5; }
+.sy-sel__leader { stroke: var(--ink); stroke-width: 1; fill: none; }
+.sy-sel__num { font: 400 11px/12px var(--font-sans); fill: var(--ink-muted); cursor: pointer; }
+.sy-sel__num.is-active { fill: var(--ink); font-weight: 600; }
+
+/* ---------- lever (arc) ---------- */
+.sy-lever svg { overflow: visible; display: block; }
+.sy-lever__track { fill: none; stroke: var(--knob-black); stroke-width: 7; stroke-linecap: round; }
+.sy-lever__track-hl { fill: none; stroke: rgba(255,255,255,.2); stroke-width: 1.5; stroke-linecap: round; }
+.sy-lever__handle { fill: var(--knob-black); filter: drop-shadow(0 2px 2px var(--shade-deep)) drop-shadow(0 6px 8px var(--shade)); transition: transform var(--dur-spring) var(--sy-ease-spring); }
+.sy-lever__handle-hl { fill: rgba(255,255,255,.24); }
+.sy-lever__opt { font: 400 12px/14px var(--font-sans); fill: var(--ink-muted); cursor: pointer; }
+.sy-lever__opt.is-active { fill: var(--ink); font-weight: 600; }
+.sy-lever__hit { cursor: grab; outline: none; }
+
+/* ---------- fader ---------- */
+.sy-fader { display: inline-flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.sy-fader__body { display: flex; align-items: stretch; gap: 4px; }
+.sy-fader__scale { overflow: visible; }
+.sy-fader__scale line { stroke: var(--ink-faint); stroke-width: 1; }
+.sy-fader__scale line.is-major { stroke: var(--ink); }
+.sy-fader__scale text { font: 400 10px var(--font-sans); fill: var(--ink-muted); }
+.sy-fader__track { position: relative; width: 44px; cursor: pointer; }
+.sy-fader__track::before { content: ''; position: absolute; left: 50%; top: -6px; bottom: -6px; width: 5px; margin-left: -2.5px; border-radius: 3px; background: var(--seam); box-shadow: 0 0 0 2px var(--chassis-raised), 0 1px 0 2px var(--sheen-soft), 0 -1px 0 2px var(--shade); }
+.sy-fader--ball .sy-fader__track { width: 30px; }
+.sy-fader--ball .sy-fader__track::before { width: 12px; margin-left: -6px; top: -10px; bottom: -10px; border-radius: 6px; background: linear-gradient(90deg, var(--chassis-sunk), color-mix(in oklab, var(--chassis-sunk), black 8%)); box-shadow: inset 0 2px 4px var(--shade-deep), inset 0 0 0 1px var(--shade), 0 1px 0 var(--sheen); }
+.sy-fader__cap { position: absolute; left: 50%; width: 46px; height: 30px; margin: -15px 0 0 -23px; border-radius: 4px; cursor: grab; outline-offset: 3px;
+  background: linear-gradient(180deg, var(--fc-hi) 0, var(--fc) 34%, var(--fc-mid) 50%, var(--fc) 66%, var(--fc-lo) 100%);
+  box-shadow: var(--shadow-raised), 0 0 0 1px var(--fc-edge); }
+.sy-fader__cap::after { content: ''; position: absolute; left: 3px; right: 3px; top: 50%; height: 2px; margin-top: -1px; background: var(--fc-line); box-shadow: 0 1px 0 var(--fc-line-hl); }
+.sy-fader--black .sy-fader__cap { --fc: var(--knob-black); --fc-hi: color-mix(in oklab, var(--knob-black), white 26%); --fc-mid: color-mix(in oklab, var(--knob-black), white 8%); --fc-lo: #000000; --fc-edge: #000000; --fc-line: #000000; --fc-line-hl: rgba(255,255,255,.18); }
+.sy-fader--ivory .sy-fader__cap { --fc: var(--cap); --fc-hi: color-mix(in oklab, var(--cap), white 50%); --fc-mid: var(--cap); --fc-lo: var(--cap-shade); --fc-edge: var(--shade); --fc-line: var(--shade); --fc-line-hl: var(--sheen);
+  height: 34px; margin-top: -17px; width: 40px; margin-left: -20px; }
+.sy-fader--ball .sy-fader__cap { width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 30%, var(--sheen) 0 12%, transparent 46%), radial-gradient(circle at 50% 55%, var(--cap) 40%, var(--cap-shade) 100%);
+  box-shadow: 0 0 0 1px var(--shade), 0 2px 2px var(--shade-deep), 0 6px 10px -2px var(--shade); }
+.sy-fader--ball .sy-fader__cap::after { display: none; }
+.sy-fader__cap:active { cursor: grabbing; }
+
+/* ---------- toggle (bat lever / mini slide) ---------- */
+.sy-toggle-ctl { display: inline-flex; align-items: center; gap: var(--space-2); }
+.sy-toggle__labels { display: flex; flex-direction: column; justify-content: space-between; height: 58px; text-align: right; }
+.sy-toggle { --pull: 0; position: relative; flex: none; width: 40px; height: 76px; padding: 0; border: 0; background: transparent; cursor: grab; }
+.sy-toggle__nut { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; filter: drop-shadow(0 2px 2px var(--shade-deep)) drop-shadow(0 6px 6px var(--shade)); }
+.sy-toggle__nut::before { content: ''; position: absolute; inset: 0; clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%);
+  background: linear-gradient(160deg, color-mix(in oklab, var(--alu), white 45%) 0, var(--alu) 30%, color-mix(in oklab, var(--alu), black 30%) 52%, var(--alu) 70%, color-mix(in oklab, var(--alu), black 22%) 100%); }
+.sy-toggle__nut::after { content: ''; position: absolute; inset: 22%; border-radius: 50%; background: radial-gradient(circle at 50% 40%, color-mix(in oklab, var(--alu), black 45%), color-mix(in oklab, var(--alu), black 18%) 70%, var(--alu) 100%); box-shadow: inset 0 1px 2px var(--shade-deep); }
+.sy-toggle__bat { position: absolute; left: 50%; width: 10px; height: 34px; margin-left: -5px; top: 4px; border-radius: 5px 5px 4px 4px;
+  background: linear-gradient(90deg, #6d6e6c 0, #c9cac7 18%, #ffffff 34%, #d4d5d2 50%, #8b8c89 74%, #5e5f5d 100%);
+  box-shadow: 0 3px 4px var(--shade-deep), 0 10px 10px -2px var(--shade);
+  transform: translateY(calc(var(--pull) * 10px));
+  transition: top var(--dur-snap) var(--sy-ease-snap), transform var(--dur-release) var(--sy-ease-spring), border-radius var(--dur-snap); }
+.sy-toggle__bat::before { content: ''; position: absolute; left: -2.5px; width: 15px; height: 15px; border-radius: 50%; top: -3px;
+  background: radial-gradient(circle at 38% 30%, #ffffff 0 14%, transparent 46%), radial-gradient(circle at 50% 50%, #c5c6c3 0, #8e8f8c 70%, #5d5e5c 100%); box-shadow: 0 1px 2px var(--shade-deep); }
+.sy-toggle.is-off .sy-toggle__bat { top: 38px; border-radius: 4px 4px 5px 5px; transform: translateY(calc(var(--pull) * -10px)); }
+.sy-toggle.is-off .sy-toggle__bat::before { top: auto; bottom: -3px; }
+.sy-toggle.is-pulling .sy-toggle__bat { transition: transform 0s, top var(--dur-snap); }
+.sy-toggle--black .sy-toggle__nut::before { clip-path: circle(48%); background: radial-gradient(circle at 50% 30%, color-mix(in oklab, var(--knob-black), white 30%) 0, var(--knob-black) 60%); }
+.sy-toggle--black .sy-toggle__nut::after { background: radial-gradient(circle at 50% 40%, #000000, color-mix(in oklab, var(--knob-black), white 12%)); }
+.sy-toggle--black .sy-toggle__bat { width: 12px; margin-left: -6px; background: linear-gradient(90deg, #000000 0, #2a2a29 25%, #5a5a58 38%, #222221 55%, #000000 100%); }
+.sy-toggle--black .sy-toggle__bat::before { left: -2px; width: 16px; height: 16px; background: radial-gradient(circle at 38% 30%, rgba(255,255,255,.55) 0 12%, transparent 44%), radial-gradient(circle, #3a3a39, #0b0b0b 80%); }
+.sy-toggle--mini { width: 22px; height: 46px; }
+.sy-toggle--mini .sy-toggle__slot { position: absolute; inset: 0; border-radius: 4px; background: var(--chassis-sunk); box-shadow: var(--shadow-well), 0 0 0 1px var(--shade); }
+.sy-toggle--mini .sy-toggle__slider { position: absolute; left: 4px; right: 4px; top: 4px; height: 22px; border-radius: 3px;
+  background: repeating-linear-gradient(180deg, transparent 0 3px, rgba(255,255,255,.14) 3px 4px), linear-gradient(90deg, #000000, color-mix(in oklab, var(--knob-black), white 18%) 40%, var(--knob-black)); box-shadow: 0 2px 3px var(--shade-deep);
+  transform: translateY(calc(var(--pull) * 6px)); transition: top var(--dur-snap) var(--sy-ease-snap), transform var(--dur-release) var(--sy-ease-spring); }
+.sy-toggle--mini.is-off .sy-toggle__slider { top: 20px; transform: translateY(calc(var(--pull) * -6px)); }
+.sy-toggle-ctl--mini { padding-bottom: 4px; }
+
+/* ---------- rocker ---------- */
+.sy-rocker { --c: var(--signal); position: relative; flex: none; width: 46px; height: 58px; padding: 4px; border: 0; cursor: pointer;
+  border-radius: var(--radius-sm); background: linear-gradient(180deg, color-mix(in oklab, var(--knob-black), white 22%), var(--knob-black)); box-shadow: var(--shadow-knob), inset 0 1px 0 rgba(255,255,255,.18); }
+.sy-rocker__face { position: relative; display: block; height: 100%; border-radius: 3px; overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--c), white 34%) 0, color-mix(in oklab, var(--c), white 12%) 10%, var(--c) 11%, var(--c) 50%, color-mix(in oklab, var(--c), black 24%) 51%, color-mix(in oklab, var(--c), black 14%) 100%);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c), black 40%);
+  transition: background var(--dur-snap) linear, box-shadow var(--dur-snap); }
+.sy-rocker.is-on .sy-rocker__face, .sy-rocker.is-pushing:not(.is-on) .sy-rocker__face {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--c), black 18%) 0, color-mix(in oklab, var(--c), black 6%) 48%, var(--c) 49%, color-mix(in oklab, var(--c), white 8%) 86%, color-mix(in oklab, var(--c), white 36%) 87%, color-mix(in oklab, var(--c), white 20%) 100%); }
+.sy-rocker.is-pushing.is-on .sy-rocker__face { background: linear-gradient(180deg, color-mix(in oklab, var(--c), white 34%) 0, color-mix(in oklab, var(--c), white 12%) 10%, var(--c) 11%, var(--c) 50%, color-mix(in oklab, var(--c), black 24%) 51%, color-mix(in oklab, var(--c), black 14%) 100%); }
+.sy-rocker--signal.is-on .sy-rocker__face { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c), black 30%), inset 0 0 16px color-mix(in oklab, var(--c), #ffd27a 50%); }
+.sy-rocker--signal.is-on { box-shadow: var(--shadow-knob), inset 0 1px 0 rgba(255,255,255,.18), 0 0 20px color-mix(in oklab, var(--c) 50%, transparent); }
+.sy-rocker--ivory { --c: var(--cap); background: linear-gradient(180deg, var(--chassis-raised), var(--chassis-sunk)); box-shadow: var(--shadow-knob), inset 0 0 0 1px var(--shade); }
+.sy-rocker--black { --c: var(--knob-black); }
+.sy-rocker--black .sy-rocker__face { box-shadow: inset 0 0 0 1px #000000; }
+.sy-rocker__dot { position: absolute; left: 50%; top: 66%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: var(--on-black); box-shadow: 0 0 2px rgba(255,255,255,.3); transition: top var(--dur-snap); }
+.sy-rocker.is-on .sy-rocker__dot { top: 34%; }
+
+/* ---------- slide switch ---------- */
+.sy-slide-ctl { display: inline-flex; align-items: center; gap: var(--space-3); color: var(--ink-faint); }
+.sy-slide-ctl .is-active { color: var(--ink); }
+.sy-slide-ctl svg { display: block; }
+.sy-slide { --x: 0px; position: relative; flex: none; width: 92px; height: 38px; padding: 0; border: 0; cursor: grab;
+  border-radius: var(--radius-round); background: var(--knob-black);
+  box-shadow: inset 0 2px 4px #000000, 0 0 0 4px var(--chassis-raised), 0 0 0 5px var(--shade), 0 6px 12px var(--shade); }
+.sy-slide__cap { position: absolute; top: 3px; bottom: 3px; left: 3px; width: 52px; border-radius: var(--radius-round);
+  background: repeating-linear-gradient(90deg, transparent 0 17px, var(--shade) 17px 18px, transparent 18px 34px), linear-gradient(180deg, color-mix(in oklab, var(--cap), white 50%), var(--cap) 50%, var(--cap-shade));
+  box-shadow: var(--shadow-raised), 0 0 0 1px var(--shade);
+  transform: translateX(var(--x)); transition: transform var(--dur-slide) var(--sy-ease-snap); }
+.sy-slide.is-dragging .sy-slide__cap { transition: none; }
+
+/* ---------- pill switch (knob uncovers a lamp) ---------- */
+.sy-pill { --x: 0px; position: relative; flex: none; width: 104px; height: 44px; padding: 0; border: 0; cursor: grab; border-radius: var(--radius-round);
+  background: var(--sy-grain), linear-gradient(180deg, var(--sheen), transparent 50%), var(--chassis-raised);
+  box-shadow: 0 0 0 1px var(--shade), inset 0 -2px 3px var(--shade), var(--shadow-raised); }
+.sy-pill__lamp { position: absolute; right: 22px; top: 50%; transform: translateY(-50%); }
+.sy-pill__knob { position: absolute; top: 4px; left: 4px; width: 36px; height: 36px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 28%, color-mix(in oklab, var(--cap), white 55%) 0, var(--cap) 48%, var(--cap-shade) 100%);
+  box-shadow: 0 0 0 1px var(--shade), 0 2px 2px var(--shade-deep), 0 6px 10px -2px var(--shade), inset 0 -2px 3px var(--shade);
+  transform: translateX(var(--x)); transition: transform var(--dur-slide) var(--sy-ease-snap); }
+.sy-pill.is-dragging .sy-pill__knob { transition: none; }
+.sy-pill--black { background: linear-gradient(180deg, rgba(255,255,255,.08), transparent 50%), var(--knob-black); box-shadow: 0 0 0 1px #000000, inset 0 2px 4px #000000, 0 0 0 4px var(--chassis-raised), 0 0 0 5px var(--shade), 0 6px 12px var(--shade); }
+.sy-pill--black .sy-pill__knob { background: radial-gradient(circle at 50% 28%, #4a4a49 0, #1e1e1d 55%, #090909 100%); box-shadow: 0 0 0 1px #000000, 0 2px 3px #000000, inset 0 1px 0 rgba(255,255,255,.14); }
+
+/* ---------- jack ---------- */
+.sy-jack { --cc: var(--signal); position: relative; flex: none; width: var(--jack-size); height: var(--jack-size); padding: 0; border: 0; cursor: pointer; border-radius: 50%; background: transparent; filter: drop-shadow(0 1px 1px var(--shade-deep)) drop-shadow(0 4px 5px var(--shade)); }
+.sy-jack__nut { position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 38% 28%, var(--sheen) 0, transparent 40%), repeating-conic-gradient(color-mix(in oklab, var(--alu), black 10%) 0 6deg, color-mix(in oklab, var(--alu), black 36%) 6deg 12deg);
+  box-shadow: inset 0 0 0 1px var(--shade-deep); }
+.sy-jack__socket { position: absolute; inset: 17%; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #3b3b3a, #0c0c0c 70%); box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--alu), black 20%), inset 0 1px 2px #000000; }
+.sy-jack__hole { position: absolute; inset: 34%; border-radius: 50%; background: radial-gradient(circle at 50% 70%, #3a3a3a 0, #000000 60%); box-shadow: inset 0 2px 2px #000000, 0 .5px 0 rgba(255,255,255,.18); }
+.sy-jack__plug { position: absolute; inset: 8%; border-radius: 50%; opacity: 0; transform: scale(.7); transition: transform var(--dur-snap) var(--sy-ease-snap), opacity 40ms;
+  background: radial-gradient(circle at 40% 30%, rgba(255,255,255,.35) 0 10%, transparent 40%), radial-gradient(circle, #2b2b2a 0 46%, var(--cc) 48% 62%, #161616 64%);
+  box-shadow: 0 3px 6px var(--shade-deep), 0 0 0 1px #000000; }
+.sy-jack.is-patched .sy-jack__plug { opacity: 1; transform: scale(1.12); }
+
+/* ---------- meter ---------- */
+.sy-meter-ctl { display: inline-flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.sy-vu { display: block; padding: 10px 10px 6px; border-radius: var(--radius-sm); background: var(--chassis-raised); box-shadow: var(--shadow-well), 0 0 0 1px var(--shade); }
+.sy-vu svg { display: block; overflow: hidden; }
+.sy-vu__face { fill: var(--cap); }
+.sy-vu__arc { fill: none; stroke: var(--ink); stroke-width: 1.25; }
+.sy-vu__arc--hot { stroke: var(--signal); stroke-width: 4; }
+.sy-vu__tick { stroke: var(--ink); stroke-width: 1.25; }
+.sy-vu__tick--hot { stroke: var(--signal-ink); }
+.sy-vu__num { font: 400 9px var(--font-sans); fill: var(--ink-muted); }
+.sy-vu__num--hot { fill: var(--signal-ink); }
+.sy-vu__needle { stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; }
+.sy-vu__hub { fill: var(--knob-black); }
+.sy-vu__unit { font: 600 9px var(--font-sans); letter-spacing: .14em; fill: var(--ink-muted); }
+.sy-ladder { display: inline-flex; gap: 3px; padding: 6px; border-radius: var(--radius-sm); background: var(--chassis-sunk); box-shadow: var(--shadow-well); }
+.sy-ladder--vertical { flex-direction: column-reverse; }
+.sy-ladder__seg { --lc: var(--led-green); position: relative; width: 6px; height: 14px; border-radius: 1px; background: var(--led-off); box-shadow: inset 0 1px 1px var(--shade); }
+.sy-ladder--vertical .sy-ladder__seg { width: 14px; height: 5px; }
+.sy-ladder__seg::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(180deg, rgba(255,255,255,.4), transparent 60%), var(--lc); box-shadow: 0 0 6px var(--lc); opacity: 0; transition: opacity 40ms linear; }
+.sy-ladder__seg.is-on::after { opacity: 1; }
+.sy-ladder__seg--warn { --lc: var(--led-amber); } .sy-ladder__seg--peak { --lc: var(--led-red); }
+
+/* ---------- dot-matrix display ---------- */
+.sy-dm { position: relative; display: inline-block; padding: 10px 12px; border-radius: var(--radius-xs); background: var(--lcd);
+  box-shadow: var(--shadow-well), 0 0 0 1px var(--seam), 0 0 0 6px var(--chassis-raised), 0 0 0 7px var(--shade); }
+.sy-dm canvas { display: block; }
+.sy-dm::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(165deg, var(--sheen-soft) 0, transparent 38%), linear-gradient(0deg, var(--shade), transparent 30%); opacity: .7; }
+
+/* ---------- control sheet (pages) ---------- */
+.sy-sheet { padding: 44px 48px 28px; }
+.sy-sheet__head { display: grid; grid-template-columns: auto auto auto 1fr auto; align-items: center; gap: 0 36px; padding-bottom: 36px; }
+.sy-sheet__mark { font: 900 92px/80px var(--font-sans); letter-spacing: -.045em; color: var(--ink); }
+.sy-sheet__mark sup { font: 600 13px/1 var(--font-sans); letter-spacing: 0; vertical-align: top; position: relative; top: 4px; margin-left: 2px; }
+.sy-sheet__sub { font: 300 34px/40px var(--font-sans); color: var(--ink); margin-top: 6px; }
+.sy-sheet__rule-v { width: 1px; align-self: stretch; background: var(--hairline); }
+.sy-sheet__tag { font: 400 11px/20px var(--font-sans); letter-spacing: .24em; text-transform: uppercase; color: var(--ink-muted); }
+.sy-sheet__tag--prose { text-transform: none; letter-spacing: .12em; }
+.sy-sheet__dash { display: block; width: 18px; height: 1px; background: var(--ink-muted); margin-top: 10px; }
+.sy-sheet__grid { display: grid; gap: 36px 28px; }
+.sy-sec { border-top: 1px solid var(--hairline); padding-top: 12px; min-width: 0; }
+.sy-sec__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; }
+.sy-sec__title { font: 600 17px/22px var(--font-sans); letter-spacing: -.005em; color: var(--ink); }
+.sy-sec__num { font: 300 12px/22px var(--font-sans); letter-spacing: .04em; color: var(--ink-faint); }
+.sy-sheet__foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--hairline); margin-top: 32px; padding-top: 16px; }
+.sy-sheet__foot b { font: 900 14px/1 var(--font-sans); letter-spacing: -.02em; margin-right: 28px; }
+.sy-dots { display: grid; grid-template-columns: repeat(6, 6px); gap: 18px; }
+.sy-dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-faint); opacity: .7; }
+.sy-dots i.is-on { background: var(--signal); opacity: 1; box-shadow: 0 0 6px color-mix(in oklab, var(--signal) 60%, transparent); }

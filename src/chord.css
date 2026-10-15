@@ -1,0 +1,233 @@
+/* SYNE CHORD — a landscape chord instrument. One plate across the top carries the function buttons and the display;
+   below it, the chord keys, the two dials and the one-octave keyboard. Hold a function button, then turn a dial or
+   press a key: that is the whole interface. Options holds the rest. */
+html, body { height: 100%; }
+html { box-sizing: border-box; -webkit-text-size-adjust: 100%; }
+*, *::before, *::after { box-sizing: inherit; }
+body { overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background: var(--sy-grain), var(--chassis); }
+#app { height: 100%; }
+.vh { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+html:not(.kbd) :is(button, .sy-knob__body, [tabindex]):focus-visible { outline: none; }
+
+.shell { height: 100%; display: flex; align-items: center; justify-content: center;
+  padding: max(6px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px)); }
+.dev { position: relative; width: 100%; max-width: 1040px; height: 100%; max-height: 520px; display: flex; flex-direction: column; gap: var(--gap, 10px); touch-action: none; }
+
+/* top plate: function buttons either side of the display */
+.plate { flex: none; display: flex; align-items: center; gap: var(--gap, 10px); padding: 8px 12px; border-radius: var(--radius-md);
+  background: var(--sy-grain), linear-gradient(180deg, var(--sheen-soft), transparent 40%), var(--chassis-raised); box-shadow: var(--shadow-plate); position: relative; }
+.grp { display: flex; align-items: flex-start; gap: var(--fgap, 6px); flex: none; }
+.fb { display: flex; flex-direction: column; align-items: center; gap: 3px; width: var(--fw, 48px); }
+.fb .sy-legend { font-size: 7.5px; line-height: 10px; letter-spacing: .08em; white-space: nowrap; }
+@media (max-width: 720px) { .fb .sy-legend { font-size: 7px; letter-spacing: .03em; } }
+.fb .sy-legend.is-on { color: var(--ink); }
+.fb .sy-push { --p: var(--pp, 28px); }
+.fb .sy-push:focus { outline: none; }
+
+/* display */
+.lcd { flex: 1 1 auto; min-width: 0; align-self: stretch; position: relative; padding: 5px 6px; border-radius: var(--radius-xs); background: var(--lcd); display: flex; align-items: center; justify-content: center; overflow: hidden;
+  box-shadow: var(--shadow-well), 0 0 0 1px var(--seam), 0 0 0 5px var(--chassis-raised), 0 0 0 6px var(--shade); margin: 6px; }
+.lcd canvas { display: block; }
+.lcd::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(165deg, var(--sheen-soft) 0, transparent 36%), linear-gradient(0deg, var(--shade), transparent 28%); opacity: .65; }
+
+/* deck: dial over the wheels on the left; the chord keys in one row over the keyboard on the right */
+.deck { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: var(--left, 120px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: var(--gap, 10px); }
+.dialcell { grid-column: 1; grid-row: 1; display: flex; align-items: center; justify-content: center; min-width: 0; }
+.dialcell .sy-ctl { gap: 2px; }
+.dialcell .sy-readout { font-size: 10px; line-height: 12px; min-height: 12px; white-space: nowrap; max-width: calc(var(--left) + 10px); overflow: hidden; text-overflow: ellipsis; }
+.dialcell .sy-legend { font-size: 7.5px; line-height: 10px; letter-spacing: .12em; white-space: nowrap; }
+.dial .sy-readout { color: var(--ink); } .dial .sy-legend { color: var(--ink-muted); }
+.dialcell .sy-knob__wrap { will-change: transform; transform: translateZ(0); }
+.chords { grid-column: 2; grid-row: 1; align-self: center; display: block; }
+.chords .sy-strip__row { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 5px; }
+.chords .sy-key { --k: 100%; width: 100%; height: var(--ck, 56px); }
+.chords .sy-key__dish { inset: 10% 20% 32%; }
+.chords .sy-key__legend { font-size: 8px; bottom: 5px; color: var(--ink); letter-spacing: .1em; }
+.chords .k-ext .sy-key__legend { font: 500 10px/10px var(--font-mono); letter-spacing: 0; bottom: 4px; text-transform: none; }
+.chords .is-auto .sy-key__legend { color: var(--ink-muted); }
+.chords .sy-key__led { top: 39%; }  /* the middle of the dish (10% .. 68%) */
+.chords.is-params .sy-key__legend { color: var(--ink); font-size: 7.5px; letter-spacing: .06em; }
+.chords .is-blank { opacity: .45; cursor: default; }
+.wheels { grid-column: 1; grid-row: 2; min-height: 0; display: flex; justify-content: center; gap: 14px; padding: 8px 8px 6px; border-radius: var(--radius-md);
+  background: var(--sy-grain), linear-gradient(180deg, var(--sheen-soft), transparent 40%), var(--chassis-raised); box-shadow: var(--shadow-plate); }
+.wheelcol { display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 0; }
+.wheelcol .sy-readout { font-size: 9.5px; line-height: 11px; min-height: 11px; }
+.wheelcol .sy-legend { font-size: 7.5px; line-height: 10px; letter-spacing: .12em; }
+.wheel { position: relative; width: var(--wheel, 40px); flex: 1 1 auto; min-height: 70px; touch-action: none; cursor: ns-resize; -webkit-tap-highlight-color: transparent; }
+.wheel:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+html:not(.kbd) .wheel:focus-visible { outline: none; }
+.wheel__slot { position: absolute; inset: 0; border-radius: 8px; background: var(--chassis-sunk); box-shadow: var(--shadow-well), 0 0 0 1px var(--shade), 0 1px 0 1px var(--sheen-soft); }
+.wheel__drum { position: absolute; left: 17%; right: 17%; top: 7%; bottom: 7%; border-radius: 5px; overflow: hidden;
+  background:
+    repeating-linear-gradient(180deg, rgba(255,255,255,.09) 0 1.5px, rgba(0,0,0,.42) 1.5px 4.5px),
+    linear-gradient(180deg, #000000 0, color-mix(in oklab, var(--knob-black), white 6%) 16%, color-mix(in oklab, var(--knob-black), white 20%) 50%, color-mix(in oklab, var(--knob-black), white 6%) 84%, #000000 100%);
+  background-size: 100% 4.5px, 100% 100%; background-position: 0 var(--ribs, 0px), 0 0;
+  box-shadow: inset 0 0 0 1px #000000, inset 3px 0 4px -2px rgba(255,255,255,.18), inset -3px 0 4px -2px rgba(0,0,0,.6), 0 2px 3px var(--shade-deep); }
+.wheel.is-pitch:not(.is-dragging) .wheel__drum { transition: background-position 220ms var(--sy-ease-spring); }
+.wheel__mark { position: absolute; left: 0; right: 0; top: calc(50% - var(--tilt, 0%)); height: 3px; margin-top: -1.5px; background: var(--signal); box-shadow: 0 0 4px color-mix(in oklab, var(--signal) 60%, transparent); }
+.wheel.is-pitch:not(.is-dragging) .wheel__mark { transition: top 220ms var(--sy-ease-spring); }
+.wheel__centre { position: absolute; left: -5px; right: -5px; top: 50%; height: 0; pointer-events: none; }
+.wheel__centre::before, .wheel__centre::after { content: ''; position: absolute; top: -1px; width: 4px; height: 2px; background: var(--ink-faint); }
+.wheel__centre::before { left: 0; } .wheel__centre::after { right: 0; }
+.keys { grid-column: 2; grid-row: 2; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+
+/* keyboard: one octave of matte silicone keys in a sunk tray, sharps set back above the naturals */
+.keys { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
+.keys__bar { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; }
+.keys__bar .sy-legend { font-size: 7.5px; }
+.keys__bar .sy-legend b { color: var(--signal-ink); font-weight: 600; }
+.oct { display: inline-flex; align-items: center; gap: 6px; }
+.oct .ukey { height: 22px; width: 28px; padding: 0; justify-content: center; font-size: 12px; letter-spacing: 0; }
+.oct .sy-readout { font-size: 10px; min-width: 40px; text-align: center; }
+/* the keybed: a sunk well with a rail across the top; naturals run up under the rail, sharps stand on them */
+.keybed { flex: 1 1 auto; min-height: 0; position: relative; padding: 0 6px 6px; border-radius: var(--radius-md); background: var(--chassis-sunk);
+  box-shadow: var(--shadow-well), 0 0 0 1px var(--shade), 0 1px 0 1px var(--sheen-soft); overflow: hidden; }
+.keybed__keys { position: absolute; left: 6px; right: 6px; top: 4px; bottom: 6px; }
+.keybed__rail { position: absolute; left: 0; right: 0; top: 0; height: 15px; z-index: 3; pointer-events: none; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
+  background: var(--sy-grain), linear-gradient(180deg, var(--sheen-soft), transparent 70%), var(--chassis-raised);
+  box-shadow: 0 1px 0 var(--sheen-soft) inset, 0 2px 0 var(--seam), 0 5px 7px -2px var(--shade-deep); }
+.keybed .sy-pad { position: absolute; top: 0; height: auto; --ps: auto; min-width: 0; transform-origin: 50% 0; }
+.keybed .sy-pad:focus { outline: none; }
+.keybed .k-w { bottom: 0; border-radius: 2px 2px 7px 7px; }
+.keybed .k-b { height: 60%; z-index: 2; border-radius: 2px 2px 5px 5px;
+  --pad: color-mix(in oklab, var(--knob-black) 86%, var(--chassis)); --pad-edge: #000000; }
+.keybed .k-b:not(.is-lit) { box-shadow: 0 0 0 1.5px #000000, inset 0 1px 1px rgba(255,255,255,.14), inset 0 -5px 0 rgba(255,255,255,.07), inset 0 -7px 6px -4px rgba(0,0,0,.6),
+  3px 7px 9px -3px var(--shade-deep), -2px 5px 7px -4px var(--shade); }
+.keybed .k-w:not(.is-lit) { box-shadow: 0 0 0 1.5px var(--pad-edge), inset 0 -5px 0 color-mix(in oklab, var(--pad), black 7%), inset 0 -6px 4px -3px var(--shade), 0 2px 2px var(--shade); }
+.keybed .sy-pad.is-down { transform: translateY(1.5px) scaleY(.992); }
+.keybed .k-b .k__name { color: color-mix(in oklab, var(--on-black), transparent 30%); font-size: 7px; letter-spacing: 0; bottom: 9px; }
+.keybed .k-b .k__dot { top: auto; bottom: 22px; }
+.keybed .k-w .k__dot { top: auto; bottom: 22px; }
+.keybed .k-b.is-lit .k__name { color: var(--on-signal); }
+.k__name { position: absolute; left: 0; right: 0; bottom: 7px; text-align: center; font: 600 8px/10px var(--font-sans); letter-spacing: .08em; color: var(--ink); pointer-events: none; }
+.k__dot { position: absolute; left: 50%; top: 8px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; pointer-events: none; }
+.k__dot.is-scale { background: var(--ink-faint); }
+.k__dot.is-next { background: var(--signal); box-shadow: 0 0 6px color-mix(in oklab, var(--signal) 60%, transparent); }
+.sy-pad.is-lit .k__name { color: var(--on-signal); }
+.sy-pad.is-lit .k__dot { background: var(--on-signal); box-shadow: none; }
+.sy-pad.is-out .k__name { color: var(--ink-faint); }
+.sy-pad.is-pick { box-shadow: 0 0 0 1.5px var(--pad-edge), 0 0 0 3.5px var(--cobalt), inset 0 -2px 4px var(--shade); }
+
+/* utility keys (octave, sheet) */
+.ukey { appearance: none; -webkit-appearance: none; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; margin: 0; border: 0; flex: none;
+  border-radius: var(--radius-sm); font: 600 9px/1 var(--font-sans); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); cursor: pointer; touch-action: manipulation;
+  background: var(--sy-grain), radial-gradient(ellipse 80% 70% at 50% 15%, var(--sheen-soft), transparent 80%), var(--cap);
+  box-shadow: 0 0 0 1px var(--seam), inset 0 1px 0 var(--sheen), inset 0 -2px 2px var(--shade), 0 2px 3px var(--shade);
+  transition: transform var(--dur-release) var(--sy-ease-spring), box-shadow var(--dur-release); -webkit-tap-highlight-color: transparent; }
+.ukey:active { transform: translateY(1px); box-shadow: 0 0 0 1px var(--seam), inset 0 2px 4px var(--shade); transition-duration: var(--dur-press); }
+.ukey:disabled { opacity: .5; cursor: default; }
+.ukey:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* portrait: this instrument is played sideways */
+.rotate { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
+.rotate__phone { width: 92px; height: 56px; border-radius: 12px; background: var(--chassis-raised); box-shadow: var(--shadow-plate), 0 0 0 1.5px var(--seam); position: relative; animation: syne-turn 2.4s var(--sy-ease-snap) infinite; }
+.rotate__phone::after { content: ''; position: absolute; inset: 8px 12px; border-radius: 3px; background: var(--lcd); box-shadow: var(--shadow-well); }
+@keyframes syne-turn { 0%, 25% { transform: rotate(-90deg); } 55%, 100% { transform: rotate(0); } }
+.rotate b { font: 700 17px/22px var(--font-sans); color: var(--ink); }
+.rotate p { margin: 0; font: 400 13px/18px var(--font-sans); color: var(--ink-muted); max-width: 30ch; }
+
+/* options sheet */
+.sheet { position: fixed; inset: 0; z-index: 20; visibility: hidden; transition: visibility 0s linear 280ms; }
+.sheet.is-open { visibility: visible; transition: none; }
+.sheet__scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, .34); opacity: 0; transition: opacity 260ms ease; }
+.sheet.is-open .sheet__scrim { opacity: 1; }
+.sheet__panel { position: absolute; top: 8px; bottom: 0; right: 0; width: min(440px, 92vw); display: flex; flex-direction: column;
+  background: var(--sy-grain), var(--chassis); border-radius: var(--radius-lg) 0 0 0; box-shadow: -1px 0 0 var(--sheen), -14px 0 34px var(--shade-deep);
+  transform: translateX(104%); transition: transform 300ms cubic-bezier(.2, .8, .2, 1); }
+.sheet.is-open .sheet__panel { transform: none; }
+.sheet__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px 10px; border-bottom: 1px solid color-mix(in oklab, var(--seam) 22%, transparent); }
+.sheet__title { display: flex; align-items: baseline; gap: 8px; }
+.sheet__title b { font: 700 18px/22px var(--font-sans); color: var(--ink); }
+.sheet__title span { font: 400 11px/14px var(--font-mono); color: var(--ink-muted); }
+.sheet__body { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 2px 16px calc(20px + env(safe-area-inset-bottom, 0px)) 16px; }
+.sh__sec { padding-block: 13px; border-bottom: 1px solid color-mix(in oklab, var(--seam) 22%, transparent); display: flex; flex-direction: column; gap: 11px; }
+.sh__sec:last-child { border-bottom: 0; }
+.sh__h { margin: 0; font: 600 9px/12px var(--font-sans); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-muted); }
+.sh__btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.sh__btns .ukey { height: 34px; padding: 0 12px; }
+.sh__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 34px; }
+.sh__row--stack { flex-direction: column; align-items: stretch; gap: 8px; }
+.sh__row--stack .sy-ctl { display: flex; }
+.sh__row--stack .sy-seg { display: flex; width: 100%; }
+.sh__row--stack .sy-seg__item { flex: 1 1 0; min-width: 0; width: auto; }
+.sheet .sh__row > .sy-ctl > .sy-legend, .sheet .sh__row--stack .sy-ctl > .sy-legend { display: none; }
+.sh__k { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1 1 auto; }
+.sh__k span { font: 500 13px/17px var(--font-sans); color: var(--ink); }
+.sh__k small { font: 400 11px/14px var(--font-sans); color: var(--ink-muted); }
+.sh__note { margin: 0; font: 400 11.5px/16px var(--font-sans); color: var(--ink-muted); }
+.sh__status { display: flex; align-items: center; gap: 8px; font: 500 13px/17px var(--font-sans); color: var(--ink); }
+.sh__knobs { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); justify-items: center; padding-top: 4px; }
+.sh__knobs .sy-readout { font-size: 10px; } .sh__knobs .sy-legend { font-size: 7.5px; }
+.ports { display: flex; flex-direction: column; gap: 6px; }
+.port { justify-content: flex-start; height: 34px; text-transform: none; letter-spacing: 0; font: 500 12px/1 var(--font-sans); }
+.port.is-sel { box-shadow: 0 0 0 2px var(--signal), inset 0 1px 0 var(--sheen), 0 2px 3px var(--shade); }
+.mon { margin: 0; padding: 8px 10px; border-radius: var(--radius-xs); background: var(--lcd); color: var(--lcd-on); font: 400 10.5px/15px var(--font-mono); height: 92px; overflow: hidden; box-shadow: var(--shadow-well), 0 0 0 1px var(--seam); white-space: pre; }
+.combos { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr); gap: 6px 14px; margin: 0; }
+.combos dt { font: 600 9px/14px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.combos dd { margin: 0; font: 400 12px/15px var(--font-sans); color: var(--ink-muted); }
+.hold { position: relative; overflow: hidden; height: 36px; align-self: flex-start; }
+.hold > span:last-child { position: relative; }
+.hold__fill { position: absolute; inset: 0; background: var(--signal); transform: scaleX(0); transform-origin: left; }
+.hold.is-arming .hold__fill { transform: scaleX(1); transition: transform 1200ms linear; }
+.hold.is-arming { color: var(--on-signal); }
+@media (prefers-reduced-motion: reduce) { .sheet__panel, .sheet__scrim, .rotate__phone { transition: none; animation: none; } }
+.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+.slot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 6px; }
+.slot small { font: 400 10.5px/13px var(--font-sans); color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slot .ukey { height: 26px; padding: 0 8px; font-size: 8px; }
+.slot .sy-readout { font-size: 11px; }
+.fitwrap { position: fixed; inset: 0; overflow: hidden; }
+
+.rail__oct { font: 600 7px/1 var(--font-sans); letter-spacing: .14em; color: var(--ink-muted); text-transform: uppercase; }
+.rail__brand { font: 300 8px/1 var(--font-sans); letter-spacing: .08em; color: var(--ink-muted); }
+.rail__brand b { font-weight: 900; letter-spacing: -.02em; color: var(--ink); }
+/* octave slider on the rail */
+.keybed__rail { height: 24px !important; pointer-events: auto !important; }
+.keybed__keys { top: 10px !important; }
+.octs { display: flex; align-items: center; gap: 7px; }
+.octs__lbl { font: 600 7px/1 var(--font-sans); letter-spacing: .14em; color: var(--ink-muted); }
+.octs__track { position: relative; width: 92px; height: 14px; cursor: ew-resize; touch-action: none; border-radius: 7px; background: var(--chassis-sunk); box-shadow: var(--shadow-well), 0 0 0 1px var(--shade); }
+.octs__track:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+html:not(.kbd) .octs__track:focus-visible { outline: none; }
+.octs__tick { position: absolute; top: 50%; width: 1px; height: 6px; margin: -3px 0 0 -0.5px; background: var(--ink-faint); }
+.octs__tick:first-child { margin-left: 6px; } .octs__tick:nth-child(5) { margin-left: -7px; }
+.octs__tick.is-zero { height: 8px; margin-top: -4px; background: var(--ink-muted); }
+.octs__cap { position: absolute; top: -2px; width: 22px; height: 18px; margin-left: -11px; border-radius: 4px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 4px, var(--shade) 4px 5px), linear-gradient(180deg, color-mix(in oklab, var(--cap), white 40%), var(--cap) 50%, var(--cap-shade));
+  box-shadow: 0 0 0 1px var(--seam), 0 2px 3px var(--shade-deep); transition: left var(--dur-slide) var(--sy-ease-snap); }
+.octs__track .octs__cap[style*="left: 0%"] { margin-left: 0; } .octs__track .octs__cap[style*="left: 100%"] { margin-left: -22px; }
+.octs__val { font-size: 10px; min-width: 18px; }
+
+/* the dial in the light finish: an ivory cap on a brushed knurl, a dark pointer line */
+:root[data-finish="chalk"] .dialcell .sy-knob--black { --knurl-a: color-mix(in oklab, var(--alu), white 25%); --knurl-b: color-mix(in oklab, var(--alu), black 22%); --face: var(--cap); }
+:root[data-finish="chalk"] .dialcell .sy-knob--black .sy-knob__face { background: radial-gradient(circle at 50% 18%, var(--sheen) 0, transparent 58%), radial-gradient(circle at 50% 60%, var(--cap) 55%, color-mix(in oklab, var(--cap), black 9%) 100%); }
+:root[data-finish="chalk"] .dialcell .sy-knob--black .sy-knob__ptr--line { background: var(--ink); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-finish]) .dialcell .sy-knob--black { --knurl-a: color-mix(in oklab, var(--alu), white 25%); --knurl-b: color-mix(in oklab, var(--alu), black 22%); --face: var(--cap); }
+  :root:not([data-finish]) .dialcell .sy-knob--black .sy-knob__face { background: radial-gradient(circle at 50% 18%, var(--sheen) 0, transparent 58%), radial-gradient(circle at 50% 60%, var(--cap) 55%, color-mix(in oklab, var(--cap), black 9%) 100%); }
+  :root:not([data-finish]) .dialcell .sy-knob--black .sy-knob__ptr--line { background: var(--ink); }
+}
+/* wordmark on the top plate */
+.wordmark { display: flex; flex-direction: column; justify-content: center; gap: 2px; flex: none; padding: 0 4px 0 2px; }
+.wordmark__syne { font: 900 19px/0.9 var(--font-sans); letter-spacing: -.045em; color: var(--ink); }
+.wordmark__syne sup { font: 600 5.5px/1 var(--font-sans); letter-spacing: 0; vertical-align: top; margin-left: 1px; }
+.wordmark__model { font: 300 13px/1 var(--font-sans); letter-spacing: .02em; color: var(--ink-muted); }
+
+
+.octs__end { font: 600 6.5px/1 var(--font-sans); letter-spacing: .12em; color: var(--ink-faint); }
+.wordmark { padding-right: 6px; }
+/* notes mode: no chord row, the keyboard rises to fill it */
+.deck.is-notes .keys { grid-row: 1 / span 2; }
+/* function buttons: pressed in while a page is open, with the glyph in signal */
+.fb .sy-push.is-down .sy-push__cap { transform: translateY(1.5px) scale(.95); box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--seam) 80%, transparent), inset 0 3px 6px var(--shade-deep), inset 0 0 0 1px var(--shade); }
+.fb.is-open .sy-push__legend { color: var(--signal); }
+.fb .sy-push__legend { color: var(--ink-muted); transition: color var(--dur-release); }
+/* the picked root: a short signal bar at the foot of its key */
+.k__root { position: absolute; left: 30%; right: 30%; bottom: 3px; height: 3px; border-radius: 2px; background: var(--signal); pointer-events: none; }
+.k-b .k__root { bottom: 4px; }
+.sy-pad.is-lit .k__root { background: var(--on-signal); }
+/* the display glass fills its bezel edge to edge */
+.lcd { padding: 4px; margin: 6px 4px 6px 6px; }
+.k__root { display: none; }
+.lcd canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.fitwrap.is-turned .sheet__body { touch-action: auto; }
