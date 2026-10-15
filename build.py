@@ -28,7 +28,13 @@ html = f'''<title>SYNE MOTH</title>
 </script>
 '''
 (out / 'index.html').write_text(html)
-(R / 'index.html').write_text(html)   # GitHub Pages serves the repo root
+# GitHub Pages serves the repo root as a plain page, so it gets its own document head: without the viewport tag a phone
+# lays the page out 980 px wide and shrinks it
+page_head = ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+  '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">'
+  '<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">'
+  '<style>html,body{margin:0;padding:0;height:100%;-webkit-text-size-adjust:100%}</style></head><body>')
+(R / 'index.html').write_text(page_head + html + '</body></html>')
 print('ok', len(html))
 # local test copy wrapped the way the artifact host wraps the page
 skel = '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>'

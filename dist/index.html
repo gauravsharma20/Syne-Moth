@@ -2535,7 +2535,7 @@ html:not(.kbd) .octs__track:focus-visible { outline: none; }
     /* only a phone held upright is asked to turn; a narrow window anywhere else (a side panel, a small Mac window)
        gets the whole landscape instrument, laid out at 740 x 340 and scaled down to fit */
     var phone = isPhone(), turned = phone && vp.h > vp.w, sv = turned ? { w: vp.h, h: vp.w } : vp;
-    var narrow = sv.w < 660 || sv.h > sv.w * 1.05;
+    var narrow = sv.w < 660 || sv.h < 330 || sv.h > sv.w * 1.05;   /* too narrow or too short (a browser's bars in landscape): lay out larger and scale to fit */
     var scale = 1, box = sv;
     if (narrow) { box = { w: 740, h: Math.round(Math.max(340, Math.min(520, 740 * sv.h / sv.w))) }; scale = Math.min(sv.w / box.w, sv.h / box.h, 1); }
     var mx = null;
