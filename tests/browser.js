@@ -93,13 +93,13 @@ function check(name, ok, info) { results.push((ok ? 'PASS ' : 'FAIL ') + name + 
   // ---- function buttons: tap opens a page and the button stays pressed in, tap again closes
   for (const [id, keys] of [['Sound', 'SOUND CUTOFF RESO ATTACK DECAY RELEASE LO-FI VOLUME'], ['Perform', 'STYLE RATE STRUM GATE HUMAN CHANCE ARP OCT'], ['FX', 'REVERB DELAY TIME FDBK CHORUS FILTER DRIVE WIDTH'], ['Key', 'SCALE ROOT OCTAVE KEYBOARD SPREAD'], ['BPM', 'TEMPO TAP SWING MIDI CLK']]) {
     const sel = FN(id); await pdown(p, sel, 1); await p.waitForTimeout(60); const during = await state(sel); await pup(p, sel, 1); await p.waitForTimeout(80);
-    const open = await state(sel), kt = await keysText(p); await p.screenshot({ path: `${OUT}/m-page-${id}.png` });
+    const open = await state(sel), kt = await keysText(p), ring = await p.evaluate(s => getComputedStyle(document.querySelector(s + ' .sy-push__cap')).boxShadow.includes('2px'), sel); await p.screenshot({ path: `${OUT}/m-page-${id}.png` });
     await press(p, sel, 80, 1); const closed = await state(sel), kt2 = await keysText(p);
-    check(`${id}: pressed in while touched, stays in with its page, tap again pops out`, during.down && open.down && open.open && kt.trim() === keys && !closed.down && !closed.open && kt2 === 'MAJ MIN 7 m7 M7 SUS2 SUS4 DIM', { during, open, closed, kt }); }
+    check(`${id}: sinks under the finger, cap back up with a ring while its page is open, tap again closes`, during.down && !open.down && open.open && ring && kt.trim() === keys && !closed.down && !closed.open && kt2 === 'MAJ MIN 7 m7 M7 SUS2 SUS4 DIM', { during, open, closed, kt }); }
   // switching pages directly
-  await press(p, FN('Sound'), 80, 1); await press(p, FN('FX'), 80, 1); g = await G(); check('tap FX while Sound is open: FX page, Sound pops out', g.sticky === 'fx' && !(await state(FN('Sound'))).down && (await state(FN('FX'))).down, g); await press(p, FN('FX'), 80, 1);
+  await press(p, FN('Sound'), 80, 1); await press(p, FN('FX'), 80, 1); g = await G(); check('tap FX while Sound is open: FX page, ring moves to FX', g.sticky === 'fx' && !(await state(FN('Sound'))).open && (await state(FN('FX'))).open, g); await press(p, FN('FX'), 80, 1);
   // pages: dial edits the picked parameter
-  await press(p, FN('Sound'), 80, 1); const pre0 = (await G()).preset; await drag(p, DIAL, -40); g = await G(); check('Sound page: dial changes the sound; display says SOUND nn OF 69', g.preset !== pre0 && (await p.evaluate(() => SyneChordUI.displayModel().small)).includes('OF 69'), g);
+  await press(p, FN('Sound'), 80, 1); const pre0 = (await G()).preset; await drag(p, DIAL, -40); g = await G(); check('Sound page: dial changes the sound; display says nn/69', g.preset !== pre0 && (await p.evaluate(() => SyneChordUI.displayModel().small)).includes('/69'), g);
   await press(p, '.chords .sy-key >> nth=1', 60, 8); await drag(p, DIAL, 60); check('...CUTOFF key + dial edits cutoff', (await p.evaluate(() => SyneChord.settings.eCut)) < 0.45);
   await press(p, '.chords .sy-key >> nth=6', 60, 8); await drag(p, DIAL, -60); check('...LO-FI', (await p.evaluate(() => SyneChord.settings.lofi)) > 0.2);
   await p.evaluate(() => { SyneChord.EDIT_KEYS.forEach(k => SyneChord.settings[k] = SyneChord.DEF[k]); SyneChord.applySound(); });

@@ -128,9 +128,9 @@
     var L = st.loop;
     switch (id) {
       case 'sound': var n = (set.preset + 1) % E.soundCount(); E.selectSound(n); show(E.soundAt(n).name, soundSub(n)); break;
-      case 'perform': if (set.perfMode) { mem.perf = set.perfMode; setS('perfMode', 0); } else setS('perfMode', mem.perf || 5); show(perfLabel(set.perfMode), set.perfMode ? 'PERFORM ON' : 'PERFORM OFF · BLOCK CHORDS'); break;
-      case 'fx': setS('fxOn', !set.fxOn); show(set.fxOn ? 'FX ON' : 'FX OFF', set.fxOn ? 'REVERB ' + pct(set.reverb) + ' · DELAY ' + pct(set.delay) + ' · CHORUS ' + pct(set.chorus) : 'DRY'); break;
-      case 'key': if (set.keyMode !== 'off') { mem.scale = set.keyMode; setS('keyMode', 'off'); show('KEY OFF', 'EVERY ROOT FOLLOWS THE CHORD KEYS'); } else { setS('keyMode', mem.scale || 'major'); show(keyName(set.keyRoot) + ' ' + MODE_SHORT[set.keyMode], 'KEY ON · ROOTS PLAY THE KEY'); } E.refreshSuggestions(); break;
+      case 'perform': if (set.perfMode) { mem.perf = set.perfMode; setS('perfMode', 0); } else setS('perfMode', mem.perf || 5); show(perfLabel(set.perfMode), set.perfMode ? 'PERFORM ON' : 'BLOCK CHORDS'); break;
+      case 'fx': setS('fxOn', !set.fxOn); show(set.fxOn ? 'FX ON' : 'FX OFF', set.fxOn ? 'EFFECTS IN' : 'DRY'); break;
+      case 'key': if (set.keyMode !== 'off') { mem.scale = set.keyMode; setS('keyMode', 'off'); show('KEY OFF', 'FREE ROOTS'); } else { setS('keyMode', mem.scale || 'major'); show(keyName(set.keyRoot) + ' ' + MODE_SHORT[set.keyMode], 'KEY ON · ROOTS PLAY THE KEY'); } E.refreshSuggestions(); break;
       case 'bass': if (set.bassMode) { mem.bass = set.bassMode; setS('bassMode', 0); show('BASS OFF', ''); } else { setS('bassMode', mem.bass || 1); show('BASS ' + M.BASS_MODES[set.bassMode], 'BASS ON'); } E.rebass(); break;
       case 'loop':
         if (L.state === 'empty') { E.rec(); show(set.loopBars ? 'COUNT IN' : 'RECORDING', set.loopBars ? 'RECORDING ' + barsLabel(set.loopBars) : 'FREE LOOP · TAP LOOP TO CLOSE IT'); }
@@ -140,14 +140,14 @@
         else { E.rec(); show(st.loop.dub ? 'OVERDUB' : 'LAYER ' + st.loop.layers.length, st.loop.dub ? 'TAP LOOP TO FINISH' : 'TAP LOOP TO LAYER AGAIN'); }
         break;
       case 'bpm': tapTempo(); break;
-      case 'hold': var v = !set.latchPerf; setS('latchPerf', v); if (!v) E.releaseAll(true); show(v ? 'HOLD ON' : 'HOLD OFF', v ? 'CHORDS RING UNTIL THE NEXT ONE' : 'CHORDS STOP WHEN YOU LET GO'); break;
+      case 'hold': var v = !set.latchPerf; setS('latchPerf', v); if (!v) E.releaseAll(true); show(v ? 'HOLD ON' : 'HOLD OFF', v ? 'RINGS ON' : 'STOPS ON RELEASE'); break;
       case 'options': UI.sheet = true; E.changed(); break;
       case 'volume': show('VOLUME ' + pct(set.volume), 'HOLD VOLUME AND TURN THE DIAL'); break;
     }
   }
   function tapTempo() {
     var t = performance.now(); UI.taps = UI.taps.filter(function (x) { return t - x < 2000; }); UI.taps.push(t);
-    if (UI.taps.length >= 2) { var a = UI.taps.slice(-5), d = (a[a.length - 1] - a[0]) / (a.length - 1); E.setBpm(60000 / d); show(set.bpm + ' BPM', 'TAP TEMPO'); } else show(set.bpm + ' BPM', 'KEEP TAPPING IN TIME');
+    if (UI.taps.length >= 2) { var a = UI.taps.slice(-5), d = (a[a.length - 1] - a[0]) / (a.length - 1); E.setBpm(60000 / d); show(set.bpm + ' BPM', 'TAP TEMPO'); } else show(set.bpm + ' BPM', 'KEEP TAPPING');
     E.changed();
   }
   function loopHold() {
@@ -173,7 +173,7 @@
   function displayModel() {
     var m = E.msg(), L = st.loop, act = E.activeCount() > 0, last = st.last, big, small, right = '', left = soundNo(set.preset);
     if (UI.mod && paramList(UI.mod)) { var k = dialSpec(UI.mod); big = k.fmt(k.value); if (UI.mod === 'sound' && k.label !== 'SOUND') big = k.label + ' ' + big;
-      if (UI.mod === 'sound' && k.label === 'SOUND') small = soundSub(set.preset); else small = UI.mod.toUpperCase() + ' · ' + k.label + (UI.sticky ? ' · TAP ' + UI.mod.toUpperCase() + ' AGAIN TO CLOSE' : ' · KEYS PICK · DIAL SETS'); }
+      if (UI.mod === 'sound' && k.label === 'SOUND') small = (set.preset + 1) + '/' + E.soundCount() + ' · ' + E.soundAt(set.preset).family; else small = UI.mod.toUpperCase() + ' · ' + k.label; }
     else if (m) { big = m.l; small = m.r; }
     else {
       big = last ? last.name : 'SYNE MOTH';
@@ -183,7 +183,7 @@
       else if (L.state === 'recording') small = 'REC BAR ' + (Math.max(0, bar - 1) % L.bars + 1) + ' OF ' + L.bars;
       else if (act && last) small = last.notes.map(function (n) { return M.spellPc(n, E.keyCtx()); }).join(' ');
       else if (st.sugg.items.length && st.history.length) small = 'TRY ' + st.sugg.items.map(function (i) { return i.name; }).join('  ');
-      else small = st.selType ? st.selType + ' · PLAY ANY KEY' : 'TAP A PAD FOR CHORDS';
+      else small = st.selType ? 'PLAY ANY KEY' : 'PICK A PAD';
       if (false && L.state !== 'countin' && L.state !== 'recording') small = (st.playing ? '▶ ' : '') + set.bpm + ' BPM · ' + small;
     }
     var progress = null;
@@ -251,9 +251,10 @@
   }
   function velFrom(e) { if (!set.velTouch) return 100; var r = e.currentTarget.getBoundingClientRect(); return Math.round(64 + Math.max(0, Math.min(1, (e.clientY - r.top) / Math.max(1, r.height))) * 63); }
 
-  /* a function button: the LED says the function is on (FX on, Hold on...); the button stays pressed in while its page is open */
+  /* a function button: the LED says the function is on (FX on, Hold on...); it only sinks under the finger. While its page is
+     open the cap stays up and wears a signal ring, like a lit bezel */
   function FnButton(p) {
-    var id = p.def[0], led = fnLed(id), open = UI.sticky === id || UI.mod === id, d = isDown('f' + id) || open;
+    var id = p.def[0], led = fnLed(id), open = UI.sticky === id || UI.mod === id, d = isDown('f' + id);
     return h('div', { className: cx('fb', open && 'is-open') },
       h(S.Led, { size: 6, flat: true, on: !!led, dark: !led, color: led ? led[0] : 'signal', blink: led && led[1] }),
       h('button', Object.assign({ type: 'button', 'aria-label': p.def[1], 'aria-expanded': PARAMS[id] ? open : undefined, 'aria-pressed': id === 'hold' ? !!set.latchPerf : undefined, className: cx('sy-push', 'sy-push--ivory', d && 'is-down') },
@@ -289,7 +290,7 @@
       h('div', { className: 'sy-strip__row' }, E.TYPES.map(function (t, i) {
         var id = t[0];
         return h(DishKey, { key: id, cls: /7$/.test(id) ? 'k-ext' : '', down: isDown('c' + i), on: st.selType === id, legend: id, aria: id + ' chord',
-          handlers: pressable('c' + i, function () { feel('latch'); E.padDown(id); }, function () { E.padUp(id); var sel = st.selType; show(sel ? sel + ' CHORDS' : 'SINGLE NOTES', sel ? 'EVERY KEY PLAYS ' + sel : 'TAP A PAD FOR CHORDS', 1000); }) });
+          handlers: pressable('c' + i, function () { feel('latch'); E.padDown(id); }, function () { E.padUp(id); var sel = st.selType; show(sel ? sel + ' CHORDS' : 'NOTES', sel ? 'ON EVERY KEY' : 'NO PAD LIT', 1000); }) });
       })));
   }
 
@@ -338,7 +339,7 @@
     var ref = useRef(null), o = set.octave;
     /* low on the left, high on the right, like the keyboard */
     function at(e) { var r = ref.current.getBoundingClientRect(); return Math.max(-2, Math.min(2, Math.round((e.clientX - r.left) / r.width * 4) - 2)); }
-    function go(n) { if (n === set.octave) return; feel('detent'); setS('octave', n); E.revoice(); show('OCTAVE ' + signed(n), 'ROOT REGISTER'); }
+    function go(n) { if (n === set.octave) return; feel('detent'); setS('octave', n); E.revoice(); show('OCTAVE ' + signed(n), 'C' + (4 + n)); }
     return h('div', { className: 'octs' },
       h('span', { className: 'octs__lbl' }, 'OCT'), h('span', { className: 'octs__end', 'aria-hidden': true }, 'LO'),
       h('div', { className: 'octs__track', ref: ref, role: 'slider', tabIndex: 0, 'aria-label': 'Octave', 'aria-valuemin': -2, 'aria-valuemax': 2, 'aria-valuenow': o,
@@ -572,7 +573,7 @@
       var pending = false;
       var off = E.subscribe(function () { if (pending) return; pending = true; requestAnimationFrame(function () { pending = false; tick[1](function (x) { return x + 1; }); }); });
       document.getElementById('sc-json').addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; if (!f) return; f.text().then(function (t) { try { E.loadProject(JSON.parse(t)); applyFinish(); syncFeedback(); } catch (x) { show('NOT A PROJECT', 'CHOOSE A SYNE MOTH FILE'); feel('error'); } }); try { e.target.value = ''; } catch (x) {} });
-      E.restore(); applyFinish(); syncFeedback(); E.setBpm(set.bpm); show('SYNE MOTH', 'PICK A PAD · PLAY THE KEYS', 3000);
+      E.restore(); applyFinish(); syncFeedback(); E.setBpm(set.bpm); show('SYNE MOTH', 'PICK A PAD', 3000);
       return off;
     }, []);
     /* only a phone held upright is asked to turn; a narrow window anywhere else (a side panel, a small Mac window)
@@ -595,14 +596,16 @@
     /* sized from the screen so everything fits one landscape screen */
     var W = Math.min(box.w, 1040) - 20, H = Math.min(box.h, 520) - 12;
     var gap = Math.round(Math.max(6, Math.min(12, H * 0.025)));
-    var fgap = W < 720 ? 2 : 5, fw = Math.floor(Math.max(34, Math.min(56, (W - 24 - 2 * gap - 64 - 200 - 8 * fgap) / 9))), pp = Math.round(Math.max(22, Math.min(34, fw - 16, H * 0.085)));
+    /* the display takes a fixed, modest width; the seven buttons share everything else */
+    var lcdW = Math.round(Math.max(180, Math.min(290, W * 0.27))), fgap = 0;
+    var fw = Math.floor(Math.max(36, Math.min(76, (W - 24 - 2 * gap - 64 - lcdW - 10) / 7))), pp = Math.round(Math.max(24, Math.min(38, fw - 18, H * 0.095)));
     var plateH = pp + 54, deckH = H - plateH - gap;
     var wheelW = Math.round(Math.max(34, Math.min(46, W * 0.05))), leftW = wheelW * 2 + 14 + 16;
     var ck = Math.round(Math.max(38, Math.min(70, (W - leftW - gap - 7 * 5 - 14) / 8, deckH * 0.3)));
     var dialSize = Math.round(Math.max(44, Math.min(leftW - 34, ck + 10))), ticks = false;
     var shellStyle = mx ? { position: 'absolute', left: 0, top: 0, width: box.w + 'px', height: box.h + 'px', transform: mx.toString(), transformOrigin: '0 0' } : narrow ? { position: 'absolute', left: Math.max(0, (vp.w - box.w * scale) / 2) + 'px', top: Math.max(0, (vp.h - box.h * scale) / 2) + 'px', width: box.w + 'px', height: box.h + 'px', transform: 'scale(' + scale + ')', transformOrigin: '0 0' } : null;
     var inner = h('div', { className: 'shell', style: shellStyle },
-      h('div', { className: 'dev', style: { '--gap': gap + 'px', '--fgap': fgap + 'px', '--fw': fw + 'px', '--pp': pp + 'px', '--ck': ck + 'px' } },
+      h('div', { className: 'dev', style: { '--gap': gap + 'px', '--fgap': fgap + 'px', '--fw': fw + 'px', '--pp': pp + 'px', '--lcdw': lcdW + 'px', '--ck': ck + 'px' } },
         h('div', { className: 'plate' },
           h('div', { className: 'wordmark', 'aria-label': 'SYNE MOTH' }, h('span', { className: 'wordmark__syne' }, 'SYNE', h('sup', null, '™')), h('span', { className: 'wordmark__model' }, 'MOTH')),
           h('div', { className: 'grp' }, FNS.map(function (d) { return h(FnButton, { key: d[0], def: d }); })),
