@@ -251,10 +251,9 @@
   }
   function velFrom(e) { if (!set.velTouch) return 100; var r = e.currentTarget.getBoundingClientRect(); return Math.round(64 + Math.max(0, Math.min(1, (e.clientY - r.top) / Math.max(1, r.height))) * 63); }
 
-  /* a function button: the LED says the function is on (FX on, Hold on...); it only sinks under the finger. While its page is
-     open the cap stays up and wears a signal ring, like a lit bezel */
+  /* a function button: the LED says the function is on (FX on, Hold on...); the button stays pressed in while its page is open */
   function FnButton(p) {
-    var id = p.def[0], led = fnLed(id), open = UI.sticky === id || UI.mod === id, d = isDown('f' + id);
+    var id = p.def[0], led = fnLed(id), open = UI.sticky === id || UI.mod === id, d = isDown('f' + id) || open;
     return h('div', { className: cx('fb', open && 'is-open') },
       h(S.Led, { size: 6, flat: true, on: !!led, dark: !led, color: led ? led[0] : 'signal', blink: led && led[1] }),
       h('button', Object.assign({ type: 'button', 'aria-label': p.def[1], 'aria-expanded': PARAMS[id] ? open : undefined, 'aria-pressed': id === 'hold' ? !!set.latchPerf : undefined, className: cx('sy-push', 'sy-push--ivory', d && 'is-down') },

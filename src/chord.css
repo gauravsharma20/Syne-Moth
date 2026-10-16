@@ -219,11 +219,15 @@ html:not(.kbd) .octs__track:focus-visible { outline: none; }
 .wordmark { padding-right: 6px; }
 /* notes mode: no chord row, the keyboard rises to fill it */
 .deck.is-notes .keys { grid-row: 1 / span 2; }
-/* function buttons: pressed in while a page is open, with the glyph in signal */
-.fb .sy-push.is-down .sy-push__cap { transform: translateY(1.5px) scale(.95); box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--seam) 80%, transparent), inset 0 3px 6px var(--shade-deep), inset 0 0 0 1px var(--shade); }
-.fb.is-open .sy-push__cap { box-shadow: 0 0 0 2px var(--signal), 0 0 9px color-mix(in oklab, var(--signal) 45%, transparent), 0 2px 3px var(--shade-deep), inset 0 -3px 5px var(--shade); }
-.fb.is-open .sy-push__legend, .fb.is-open .sy-legend { color: var(--ink); }
+/* function buttons, pressed (under the finger, or latched while its page is open): the cap drops a hair into its collar.
+   No dark outline and no colour change: the seam softens, the drop shadow goes, a shallow shade sits along the top edge
+   and the cap face dims slightly, the way a real ivory cap looks pushed in */
+.fb .sy-push__cap { transition: transform var(--dur-release) var(--sy-ease-spring), box-shadow var(--dur-release), filter var(--dur-release); }
+.fb .sy-push.is-down .sy-push__cap { transform: translateY(1.2px) scale(.965); filter: brightness(.95);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--seam) 32%, transparent), inset 0 2.5px 4px color-mix(in oklab, var(--shade-deep) 70%, transparent), inset 0 -1px 2px var(--sheen-soft); }
 .fb .sy-push__legend { color: var(--ink-muted); transition: color var(--dur-release); }
+.fb .sy-push.is-down .sy-push__legend { color: var(--ink); transform: translateY(1.2px); }
+.fb.is-open .sy-legend { color: var(--ink); }
 /* the picked root: a short signal bar at the foot of its key */
 .k__root { position: absolute; left: 30%; right: 30%; bottom: 3px; height: 3px; border-radius: 2px; background: var(--signal); pointer-events: none; }
 .k-b .k__root { bottom: 4px; }
