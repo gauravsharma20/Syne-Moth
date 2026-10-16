@@ -239,3 +239,42 @@ html:not(.kbd) .octs__track:focus-visible { outline: none; }
 .k__root { display: none; }
 .lcd canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
 .fitwrap.is-turned .sheet__body { touch-action: auto; }
+
+/* ===== light finish: realistic edges. The design system's seam is a near-black 1.5px ring that reads as a drawn outline
+   on light plastic; real light keys show a faint edge, a lit top lip and a soft shadow instead ===== */
+  /* chord and page pads: a faint edge, a lit top lip, a soft cast shadow */
+  :root[data-finish="chalk"] .chords .sy-key { box-shadow: 0 0 0 1px rgba(20,20,18,.13), inset 0 1px 0 rgba(255,255,255,.85), inset 0 -2px 3px rgba(20,20,18,.06), 0 1px 1px rgba(20,20,18,.10), 0 3px 6px -1px rgba(20,20,18,.12); }
+  :root[data-finish="chalk"] .chords .sy-key.is-down { box-shadow: 0 0 0 1px rgba(20,20,18,.15), inset 0 2px 4px rgba(20,20,18,.13), 0 0 1px rgba(20,20,18,.10); }
+  :root[data-finish="chalk"] .chords .sy-key__dish { box-shadow: inset 0 1px 2px rgba(20,20,18,.10), 0 1px 0 rgba(255,255,255,.7); }
+  /* white keys: a hairline gap and a lit front edge, not an outline */
+  :root[data-finish="chalk"] .keybed .k-w:not(.is-lit) { box-shadow: 0 0 0 1px rgba(20,20,18,.16), inset 0 1px 0 rgba(255,255,255,.8), inset 0 -5px 0 color-mix(in oklab, var(--pad), black 5%), inset 0 -6px 5px -3px rgba(20,20,18,.10), 0 2px 3px rgba(20,20,18,.10); }
+  :root[data-finish="chalk"] .keybed .k-w.is-lit { box-shadow: 0 0 0 1px color-mix(in oklab, var(--signal), black 22%), inset 0 -5px 0 color-mix(in oklab, var(--signal), black 10%), 0 2px 3px rgba(20,20,18,.12); }
+  /* black keys keep their dark body but lose the hard ring */
+  :root[data-finish="chalk"] .keybed .k-b:not(.is-lit) { box-shadow: 0 0 0 1px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.16), inset 0 -5px 0 rgba(255,255,255,.07), inset 0 -7px 6px -4px rgba(0,0,0,.6), 3px 6px 8px -3px rgba(20,20,18,.35), -2px 4px 6px -4px rgba(20,20,18,.25); }
+  :root[data-finish="chalk"] .keybed .k-b.is-lit { box-shadow: 0 0 0 1px color-mix(in oklab, var(--signal), black 30%), inset 0 -5px 0 color-mix(in oklab, var(--signal), black 12%), 3px 6px 8px -3px rgba(20,20,18,.3); }
+  /* the keybed, the octave slider and the wheels: soft wells, no black rings */
+  :root[data-finish="chalk"] .keybed { box-shadow: inset 0 2px 5px rgba(20,20,18,.14), 0 0 0 1px rgba(20,20,18,.08), 0 1px 0 1px rgba(255,255,255,.6); }
+@media (prefers-color-scheme: light) {
+  /* chord and page pads: a faint edge, a lit top lip, a soft cast shadow */
+    :root:not([data-finish]) .chords .sy-key { box-shadow: 0 0 0 1px rgba(20,20,18,.13), inset 0 1px 0 rgba(255,255,255,.85), inset 0 -2px 3px rgba(20,20,18,.06), 0 1px 1px rgba(20,20,18,.10), 0 3px 6px -1px rgba(20,20,18,.12); }
+    :root:not([data-finish]) .chords .sy-key.is-down { box-shadow: 0 0 0 1px rgba(20,20,18,.15), inset 0 2px 4px rgba(20,20,18,.13), 0 0 1px rgba(20,20,18,.10); }
+    :root:not([data-finish]) .chords .sy-key__dish { box-shadow: inset 0 1px 2px rgba(20,20,18,.10), 0 1px 0 rgba(255,255,255,.7); }
+  /* white keys: a hairline gap and a lit front edge, not an outline */
+    :root:not([data-finish]) .keybed .k-w:not(.is-lit) { box-shadow: 0 0 0 1px rgba(20,20,18,.16), inset 0 1px 0 rgba(255,255,255,.8), inset 0 -5px 0 color-mix(in oklab, var(--pad), black 5%), inset 0 -6px 5px -3px rgba(20,20,18,.10), 0 2px 3px rgba(20,20,18,.10); }
+    :root:not([data-finish]) .keybed .k-w.is-lit { box-shadow: 0 0 0 1px color-mix(in oklab, var(--signal), black 22%), inset 0 -5px 0 color-mix(in oklab, var(--signal), black 10%), 0 2px 3px rgba(20,20,18,.12); }
+  /* black keys keep their dark body but lose the hard ring */
+    :root:not([data-finish]) .keybed .k-b:not(.is-lit) { box-shadow: 0 0 0 1px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.16), inset 0 -5px 0 rgba(255,255,255,.07), inset 0 -7px 6px -4px rgba(0,0,0,.6), 3px 6px 8px -3px rgba(20,20,18,.35), -2px 4px 6px -4px rgba(20,20,18,.25); }
+    :root:not([data-finish]) .keybed .k-b.is-lit { box-shadow: 0 0 0 1px color-mix(in oklab, var(--signal), black 30%), inset 0 -5px 0 color-mix(in oklab, var(--signal), black 12%), 3px 6px 8px -3px rgba(20,20,18,.3); }
+  /* the keybed, the octave slider and the wheels: soft wells, no black rings */
+    :root:not([data-finish]) .keybed { box-shadow: inset 0 2px 5px rgba(20,20,18,.14), 0 0 0 1px rgba(20,20,18,.08), 0 1px 0 1px rgba(255,255,255,.6); }
+}
+
+/* light finish, continued: the rail edge, the octave slide and the display bezel */
+  :root[data-finish="chalk"] .keybed__rail { box-shadow: 0 1px 0 var(--sheen-soft) inset, 0 1px 0 rgba(20,20,18,.18), 0 4px 6px -2px rgba(20,20,18,.18); }
+  :root[data-finish="chalk"] .octs__cap { box-shadow: 0 0 0 1px rgba(20,20,18,.18), inset 0 1px 0 rgba(255,255,255,.8), 0 2px 3px rgba(20,20,18,.18); }
+  :root[data-finish="chalk"] .lcd { box-shadow: var(--shadow-well), 0 0 0 1px rgba(20,20,18,.28), 0 0 0 5px var(--chassis-raised), 0 0 0 6px rgba(20,20,18,.10); }
+@media (prefers-color-scheme: light) {
+    :root:not([data-finish]) .keybed__rail { box-shadow: 0 1px 0 var(--sheen-soft) inset, 0 1px 0 rgba(20,20,18,.18), 0 4px 6px -2px rgba(20,20,18,.18); }
+    :root:not([data-finish]) .octs__cap { box-shadow: 0 0 0 1px rgba(20,20,18,.18), inset 0 1px 0 rgba(255,255,255,.8), 0 2px 3px rgba(20,20,18,.18); }
+    :root:not([data-finish]) .lcd { box-shadow: var(--shadow-well), 0 0 0 1px rgba(20,20,18,.28), 0 0 0 5px var(--chassis-raised), 0 0 0 6px rgba(20,20,18,.10); }
+}
