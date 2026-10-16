@@ -15,8 +15,8 @@ A one-octave chord instrument for the browser, built on the SYNE design system a
 - **Function buttons:** Sound, Perform, FX, Key, BPM, Hold and Options.
   - Tap a button to open its page on the pads; the dial sets the parameter you pick.
   - Long-press switches the function on or off.
-  - A light above a button means the function is on.
-  - A button that stays pressed in has its page open.
+  - The light above a button is on whenever it is active: its page is open or its function is on.
+  - A button stays pressed in while its page is open.
 - **Sounds.** 69 original patches in three banks, each built the way its instrument builds a voice:
   - **D-50 style** (LA synthesis: a sampled-style attack over a synth body);
   - **Juno-60 style** (one DCO with PWM and sub, a 24 dB filter and BBD chorus);
@@ -29,6 +29,7 @@ A one-octave chord instrument for the browser, built on the SYNE design system a
   - Inside Claude, the page asks Claude for these.
   - Elsewhere it uses the built-in harmony engine.
 - **MIDI out.** Uses Web MIDI (desktop Chrome, Edge or Firefox), and you can save a MIDI file of the session.
+- **Haptics.** Every control taps back: on iPhone through the Taptic Engine (played as the finger lifts, which is when Safari allows it), on Android through vibration. Switch off in Options.
 - **Phone.** If the app keeps the page upright, the instrument is drawn turned sideways so it still fills the screen.
 
 The patch names are original and none of them copies a factory preset. This project is not affiliated with Roland, Yamaha or Telepathic Instruments.
@@ -51,4 +52,5 @@ The tests need Playwright and a local copy of React 18.3.1 UMD in `vendor/`.
 node tests/core.test.js   # music core
 node tests/sounds.js      # every patch rendered offline: speaks, finite, level-matched, releases
 node tests/browser.js     # every control driven by touch, at six screen sizes plus a turned phone
+node tests/haptics.js     # every control gives a haptic on iPhone (Taptic) and Android (vibrate); none when Haptics is off
 ```

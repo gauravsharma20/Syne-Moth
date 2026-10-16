@@ -223,9 +223,11 @@ html:not(.kbd) .octs__track:focus-visible { outline: none; }
    No dark outline and no colour change: the seam softens, the drop shadow goes, a shallow shade sits along the top edge
    and the cap face dims slightly, the way a real ivory cap looks pushed in */
 .fb .sy-push__cap { transition: transform var(--dur-release) var(--sy-ease-spring), box-shadow var(--dur-release), filter var(--dur-release); }
+.fb .sy-push .sy-push__cap { box-shadow: 0 0 0 1px color-mix(in oklab, var(--seam) 32%, transparent), 0 2px 3px var(--shade-deep), inset 0 -3px 5px var(--shade); }
 .fb .sy-push.is-down .sy-push__cap { transform: translateY(1.2px) scale(.965); filter: brightness(.95);
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--seam) 32%, transparent), inset 0 2.5px 4px color-mix(in oklab, var(--shade-deep) 70%, transparent), inset 0 -1px 2px var(--sheen-soft); }
-.fb .sy-push__legend { color: var(--ink-muted); transition: color var(--dur-release); }
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--seam) 32%, transparent), 0 0 0 transparent, inset 0 2.5px 4px color-mix(in oklab, var(--shade-deep) 70%, transparent); }
+.fb .sy-push__legend { transition: color var(--dur-release), transform var(--dur-release) var(--sy-ease-spring); }
+.fb .sy-push__legend { color: var(--ink-muted); }
 .fb .sy-push.is-down .sy-push__legend { color: var(--ink); transform: translateY(1.2px); }
 .fb.is-open .sy-legend { color: var(--ink); }
 /* the picked root: a short signal bar at the foot of its key */
