@@ -30,7 +30,15 @@
     });
     return { ios: IOS, vibrate: VIB, count: function () { return count; }, tap: tap };
   })();
-  function applyFinish() { var f = set.finish; if (f === 'chalk' || f === 'graphite') document.documentElement.setAttribute('data-finish', f); else document.documentElement.removeAttribute('data-finish'); }
+  /* the light-finish styling keys off .is-light, worked out from the panel colour actually on screen, so it holds whatever
+     sets the theme: the Options finish, the phone's appearance, or a host forcing light or dark */
+  function markLight() {
+    var c = getComputedStyle(document.documentElement).getPropertyValue('--chassis').trim(), m = c.match(/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i), l = 1;
+    if (m) l = (0.2126 * parseInt(m[1], 16) + 0.7152 * parseInt(m[2], 16) + 0.0722 * parseInt(m[3], 16)) / 255;
+    document.documentElement.classList.toggle('is-light', l > 0.5);
+  }
+  function applyFinish() { var f = set.finish; if (f === 'chalk' || f === 'graphite') document.documentElement.setAttribute('data-finish', f); else document.documentElement.removeAttribute('data-finish'); markLight(); }
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', markLight); new MutationObserver(markLight).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-finish', 'style'] }); } catch (e) {}
   function setS(k, v) { set[k] = v; E.applySound(); E.changed(); }
   function show(big, small, ms) { E.say(big, small, ms || 1400); }
   window.addEventListener('keydown', function (e) { if (e.key === 'Tab') document.documentElement.classList.add('kbd'); }, true);
